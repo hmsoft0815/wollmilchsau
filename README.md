@@ -169,7 +169,7 @@ To use **wollmilchsau** as a tool in Claude Desktop, add it to your configuratio
 
 ---
 
-## ud83dudce6 Artifact Integration
+## IMPORTANT Artifact Integration
 
 **wollmilchsau** is deeply integrated with the [mlcartifact](https://github.com/hmsoft0815/mlcartifact) system. When configured, it can automatically save large execution results, charts, or complex data structures as persistent artifacts.
 

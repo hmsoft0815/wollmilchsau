@@ -151,7 +151,7 @@ Um **wollmilchsau** als Tool in Claude Desktop zu nutzen, füge es zu deiner Kon
 
 ---
 
-## ud83dudce6 Artefakt-Integration
+## Wichtig: Artefakt-Integration
 
 **wollmilchsau** ist tief in das [mlcartifact](https://github.com/hmsoft0815/mlcartifact)-System integriert. Bei entsprechender Konfiguration ku00f6nnen grou00dfe Ausfu00fchrungsergebnisse, Diagramme oder komplexe Datenstrukturen automatisch als persistente Artefakte gespeichert werden.
 
