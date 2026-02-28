@@ -43,8 +43,10 @@ nfpms:
     builds:
       - wollmilchsau
     contents:
-      - src: wollmilchsau
-        dst: /usr/bin/wollmilchsau
+      - src: LICENSE
+        dst: /usr/share/doc/wollmilchsau/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/wollmilchsau/README.md
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
