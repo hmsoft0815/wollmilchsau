@@ -110,26 +110,44 @@ Um Sicherheit und Performance zu gewährleisten, ist die Umgebung streng isolier
   - **Arbeitsspeicher:** Aktives Heap-Monitoring. Skripte sind auf **128MB** genutzten Heap begrenzt. Das Überschreiten führt zum sofortigen Abbruch.
   - **CPU / Zeit:** Konfigurierbarer Timeout (Standard 10s). Skripte werden nach Ablauf hart via `iso.TerminateExecution()` gestoppt.
 - **Nur ECMA-262:** Reines V8-Sandbox-Environment. Moderne JS/TS Features werden unterstützt, aber umgebungsspezifische APIs sind eingeschränkt.
-- **Kein Netzwerk:** `fetch`, `XMLHttpRequest` oder jeglicher andere Netzwerkzugriff ist deaktiviert.
+- **Kein Netzwerk:** `fetch`, `XMLHttpRequest` oder jeglicher anderer Netzwerkzugriff ist deaktiviert.
 - **Keine Event-Loop-Timer:** `setTimeout`, `setInterval` und `setImmediate` stehen nicht zur Verfügung. Die Ausführung erfolgt rein synchron.
 - **Keine Node.js / Web APIs:** Kein Zugriff auf `fs`, `os`, `process` oder DOM APIs.
 - **Eingeschränktes i18n:** Das `Intl` Objekt ist verfügbar, aber auf die Locale `en-US` beschränkt.
 - **Reine Logik:** Ideal für Algorithmen, Datentransformationen und mathematische Berechnungen.
 
-## Claude Desktop Konfiguration
+### Installation via Script (Linux/macOS)
 
-Ergänzen Sie Ihre `claude_desktop_config.json`:
+Der schnellste Weg, **wollmilchsau** zu installieren:
+
+```bash
+curl -sfL https://raw.githubusercontent.com/hmsoft0815/wollmilchsau/main/scripts/install.sh | sh
+```
+
+### Vorkompilierte Binaries (Linux)
+
+Lade die aktuelle Version als **ZIP/TAR** herunter oder installiere sie via **.deb** oder **.rpm** direkt von der **[GitHub Releases](https://github.com/hmsoft0815/wollmilchsau/releases)** Seite.
+
+---
+
+## Claude Desktop Integration
+
+Um **wollmilchsau** als Tool in Claude Desktop zu nutzen, füge es zu deiner Konfiguration hinzu:
+
+- **MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "wollmilchsau": {
-      "command": "/absoluter/pfad/zu/wollmilchsau/build/wollmilchsau",
-      "args": ["-log-dir", "/pfad/zu/logs"]
+      "command": "wollmilchsau",
+      "args": ["-log-dir", "/dein/absoluter/pfad/zu/logs"]
     }
   }
 }
 ```
+*Hinweis: Falls die Binary nicht in deinem PATH liegt, gib bitte den absoluten Pfad an.*
 
 ---
 

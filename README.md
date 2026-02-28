@@ -132,20 +132,40 @@ To ensure safety and performance, the execution environment is strictly sandboxe
 - **Limited i18n:** The `Intl` object is available but limited to the `en-US` locale.
 - **Pure Logic:** Ideal for algorithms, data transformation, and mathematical computations.
 
-## Claude Desktop Configuration
+### Installation via Script (Linux/macOS)
 
-Add this to your `claude_desktop_config.json`:
+The fastest way to install **wollmilchsau**:
+
+```bash
+curl -sfL https://raw.githubusercontent.com/hmsoft0815/wollmilchsau/main/scripts/install.sh | sh
+```
+
+### Pre-built Binaries (Linux)
+
+Download the latest version as a **ZIP/TAR**, or install via **.deb** or **.rpm** from the **[GitHub Releases](https://github.com/hmsoft0815/wollmilchsau/releases)** page.
+
+---
+
+## Claude Desktop Integration
+
+To use **wollmilchsau** as a tool in Claude Desktop, add it to your configuration file:
+
+- **MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "wollmilchsau": {
-      "command": "/absolute/path/to/wollmilchsau/build/wollmilchsau",
-      "args": ["-log-dir", "/path/to/logs"]
+      "command": "wollmilchsau",
+      "args": ["-log-dir", "/your/absolute/path/to/logs"]
     }
   }
 }
 ```
+*Note: If the binary is not in your PATH, provide the absolute path.*
+
+---
 
 ---
 

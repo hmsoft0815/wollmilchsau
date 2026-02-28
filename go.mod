@@ -6,7 +6,7 @@ require (
 	github.com/evanw/esbuild v0.24.2
 	github.com/google/uuid v1.6.0
 	github.com/mark3labs/mcp-go v0.32.0
-	github.com/hmsoft0815/mlcartifact v0.0.0
+	github.com/hmsoft0815/mlcartifact v0.1.0
 	rogchap.com/v8go v0.9.0
 )
 

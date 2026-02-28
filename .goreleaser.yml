@@ -28,5 +28,21 @@ archives:
 checksum:
   name_template: "checksums.txt"
 
+nfpms:
+  - id: wollmilchsau-packages
+    package_name: wollmilchsau
+    file_name_template: "{{ .PackageName }}_{{ .Version }}_{{ .Arch }}"
+    vendor: Michael Lechner
+    homepage: https://github.com/hmsoft0815/wollmilchsau
+    maintainer: Michael Lechner <michael@mlcgo.eu>
+    description: High-performance TypeScript execution engine for MCP.
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    contents:
+      - src: wollmilchsau
+        dst: /usr/bin/wollmilchsau
+
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
