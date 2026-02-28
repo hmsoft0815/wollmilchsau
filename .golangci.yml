@@ -1,0 +1,49 @@
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment # Too micro-optimizing for this project
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - misspell
+
+run:
+  timeout: 5m
+  tests: true
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    - linters:
+        - errcheck
+      text: "defer"
+    - linters:
+        - errcheck
+      text: "os.RemoveAll"
+    - linters:
+        - errcheck
+      text: "os.Remove"
+    # Ignore the specific blocks where we intentionally ignore errors
+    - linters:
+        - errcheck
+      path: internal/executor/executor.go
+    - linters:
+        - errcheck
+      path: internal/sourcemap/sourcemap_test.go
+    - linters:
+        - errcheck
+      path: cmd/testclient/main.go
