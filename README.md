@@ -44,6 +44,13 @@ AI agents often need to execute code or process data to fulfill complex tasks. W
 - **Go 1.23+**
 - **C++ Compiler:** `build-essential` (Linux) or `llvm` (macOS) required for `v8go` CGo bindings.
 
+### Pre-built Binaries (Linux)
+
+**The easiest way:** Download the latest Linux binaries from the **[GitHub Releases](https://github.com/hmsoft0815/wollmilchsau/releases)** page. 
+
+> [!NOTE]
+> Due to the V8 dependency (CGo), we currently only provide automated binaries for Linux. For Windows and macOS, please follow the [Build](#build) section or use Go 1.24+.
+
 ### Build
 
 ```bash

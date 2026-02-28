@@ -44,6 +44,13 @@ KI-Agenten müssen oft Code ausführen oder Daten verarbeiten, um komplexe Aufga
 - **Go 1.23+**
 - **C++ Compiler:** `build-essential` (Linux) oder `llvm` (macOS).
 
+### Vorkompilierte Binaries (Linux)
+
+**Der einfachste Weg:** Lade die aktuellen Linux-Binaries direkt von der **[GitHub Releases](https://github.com/hmsoft0815/wollmilchsau/releases)** Seite herunter.
+
+> [!NOTE]
+> Aufgrund der V8-Abhu00e4ngigkeit (CGo) stellen wir aktuell automatisierte Binaries nur fu00fcr Linux bereit. Fu00fcr Windows und macOS nutze bitte den [Build-Abschnitt](#build) oder Go 1.24+.
+
 ### Build
 
 ```bash

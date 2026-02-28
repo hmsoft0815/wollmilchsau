@@ -1,0 +1,32 @@
+version: 2
+
+# Wollmilchsau GoReleaser config
+# NOTE: Because this project uses CGo (v8go), cross-compilation is limited.
+# It will build for the host system (usually Linux in GitHub Actions).
+
+builds:
+  - id: wollmilchsau
+    main: .
+    binary: wollmilchsau
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - LICENSE
+      - README.md
+      - README.de.md
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
