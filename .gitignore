@@ -13,3 +13,6 @@ test_logs/
 # OS generated files
 .DS_Store
 .env
+
+# Task runner state
+.task/
