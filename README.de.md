@@ -2,6 +2,9 @@
 
 MCP-Server in Go — Hochperformante TypeScript-Ausführung mit eingebettetem V8 und esbuild.
 
+Copyright (c) 2026 Michael Lechner. Alle Rechte vorbehalten.
+Lizenziert unter der MIT-Lizenz.
+
 > 🇬🇧 [English Version](README.md)
 
 ---
