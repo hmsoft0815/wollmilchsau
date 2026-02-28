@@ -14,12 +14,17 @@ tasks:
     desc: Build the wollmilchsau binary
     cmds:
       - mkdir -p build
-      - go build -o {{.BINARY}} .
+      - CGO_ENABLED=1 go build -trimpath -o {{.BINARY}} ./cmd/main.go
     sources:
       - "**/*.go"
       - go.mod
     generates:
       - "{{.BINARY}}"
+
+  docker-build:
+    desc: Build the Docker image
+    cmds:
+      - docker build -t wollmilchsau .
 
   test:
     desc: Run all tests

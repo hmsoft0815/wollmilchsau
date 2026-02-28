@@ -124,9 +124,21 @@ Der schnellste Weg, **wollmilchsau** zu installieren:
 curl -sfL https://raw.githubusercontent.com/hmsoft0815/wollmilchsau/main/scripts/install.sh | sh
 ```
 
-### Vorkompilierte Binaries (Linux)
-
 Lade die aktuelle Version als **ZIP/TAR** herunter oder installiere sie via **.deb** oder **.rpm** direkt von der **[GitHub Releases](https://github.com/hmsoft0815/wollmilchsau/releases)** Seite.
+
+### Docker-Unterstützung
+
+Du kannst **wollmilchsau** auch als Docker-Container ausführen. Dies wird empfohlen, wenn du eine vollständig isolierte Umgebung wünschst.
+
+**Image bauen:**
+```bash
+docker build -t wollmilchsau .
+```
+
+**Container starten:**
+```bash
+docker run -p 8000:8000 wollmilchsau
+```
 
 ---
 

@@ -140,9 +140,21 @@ The fastest way to install **wollmilchsau**:
 curl -sfL https://raw.githubusercontent.com/hmsoft0815/wollmilchsau/main/scripts/install.sh | sh
 ```
 
-### Pre-built Binaries (Linux)
-
 Download the latest version as a **ZIP/TAR**, or install via **.deb** or **.rpm** from the **[GitHub Releases](https://github.com/hmsoft0815/wollmilchsau/releases)** page.
+
+### Docker Support
+
+You can also run **wollmilchsau** as a Docker container. This is recommended if you want a fully isolated environment.
+
+**Build the image:**
+```bash
+docker build -t wollmilchsau .
+```
+
+**Run the container:**
+```bash
+docker run -p 8000:8000 wollmilchsau
+```
 
 ---
 
