@@ -40,6 +40,8 @@ nfpms:
     formats:
       - deb
       - rpm
+    builds:
+      - wollmilchsau
     contents:
       - src: wollmilchsau
         dst: /usr/bin/wollmilchsau
