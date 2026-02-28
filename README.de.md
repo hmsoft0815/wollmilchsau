@@ -24,6 +24,7 @@ KI-Agenten müssen oft Code ausführen oder Daten verarbeiten, um komplexe Aufga
 - **Source-Map-Unterstützung:** Fehler werden automatisch auf die ursprünglichen TS-Dateien zurückgeführt.
 - **LLM-optimierte Ausgabe:** Strukturierte JSON-Metadaten und getrennte Inhaltsblöcke.
 - **SSE & Stdio Support:** Betrieb als lokaler Prozess oder eigenständiger HTTP-Server.
+- **Artefakt-Integration:** Automatische Anbindung an **mlcartifact**, um Ausführungsergebnisse, große Datenblöcke oder generierte Berichte persistent zu speichern.
 - **Request-Archivierung (ZIP-Logging):** Optionale vollständige Archivierung jedes Requests (Quelldateien + Metadaten + Ergebnis) in kompakten ZIP-Dateien.
 
 ## Stack

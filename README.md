@@ -24,6 +24,7 @@ AI agents often need to execute code or process data to fulfill complex tasks. W
 - **Source Map Support:** Runtime errors and build warnings are automatically mapped back to original TypeScript files and lines.
 - **LLM-Optimized Output:** Returns structured JSON metadata with human-readable summaries and separate content blocks for stdout/stderr.
 - **SSE & Stdio Support:** Runs as a local process or a standalone HTTP server.
+- **Artifact Integration:** Automatically connects to **mlcartifact** to persist execution results, large data blocks, or generated reports.
 - **Request Archiving (ZIP Logging):** Optional full archiving of every request (source files + metadata + result) in compact ZIP files.
 
 ## Stack
