@@ -29,27 +29,7 @@ Add this to your system prompt:
 
 ## How It Works
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        Your LLM Agent                       │
-│                                                             │
-│  "Parse this CSV, group by category, sum the totals..."     │
-│                             │                               │
-│  Without wollmilchsau:      │  With wollmilchsau:           │
-│  ┌───────────────────┐      │  ┌───────────────────────┐    │
-│  │ Think... Think... │      │  │ Write TypeScript: 10s  │    │
-│  │  Step 1... Step 2 │      │  │ Run in V8 sandbox: 5ms │    │
-│  │  Wait, unless...  │      │  │ → Deterministic result │    │
-│  │  Actually...      │      └──┴───────────────────────┘    │
-│  └───────────────────┘                                      │
-│  → Slow, error-prone                                        │
-└─────────────────────────────────────────────────────────────┘
-
-  LLM writes code  →  wollmilchsau bundles (esbuild)  →  V8 runs it
-         │                        │                           │
-     TypeScript             In-process                  Isolated sandbox
-     (multi-file)           no Node.js                  128MB / 10s limit
-```
+![How wollmilchsau works](docs/how_it_works.png)
 
 **The loop:** The agent writes code → wollmilchsau runs it → returns structured result or error with source maps → agent fixes and retries. **Self-correcting by design.**
 

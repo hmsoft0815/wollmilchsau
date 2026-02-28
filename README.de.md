@@ -29,27 +29,7 @@ Füge das deinem System-Prompt hinzu:
 
 ## Wie es funktioniert
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                       Dein LLM-Agent                            │
-│                                                                 │
-│  "Parse diese CSV, gruppiere nach Kategorie, summiere..."       │
-│                              │                                  │
-│  Ohne wollmilchsau:          │  Mit wollmilchsau:               │
-│  ┌────────────────────┐      │  ┌────────────────────────────┐  │
-│  │ Denk... Denk...    │      │  │ TypeScript schreiben: 10s  │  │
-│  │  Schritt 1... 2... │      │  │ In V8-Sandbox ausführen:   │  │
-│  │  Warte, außer...   │      │  │   5ms                      │  │
-│  │  Eigentlich...     │      │  │ → Deterministisches Ergeb. │  │
-│  └────────────────────┘      └──┴────────────────────────────┘  │
-│  → Langsam, fehleranfällig                                      │
-└─────────────────────────────────────────────────────────────────┘
-
-  LLM schreibt Code  →  wollmilchsau bündelt (esbuild)  →  V8 führt aus
-         │                          │                           │
-     TypeScript              In-Process                  Isolierte Sandbox
-     (mehrere Dateien)       kein Node.js                128MB / 10s Limit
-```
+![Wie wollmilchsau funktioniert](docs/how_it_works.png)
 
 **Der Ablauf:** Agent schreibt Code → wollmilchsau führt ihn aus → gibt strukturiertes Ergebnis oder Fehler mit Source Maps zurück → Agent korrigiert und wiederholt. **Selbstkorrigierend by Design.**
 
