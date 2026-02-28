@@ -121,6 +121,21 @@ Ergänzen Sie Ihre `claude_desktop_config.json`:
 }
 ```
 
+---
+
+## ud83dudce6 Artefakt-Integration
+
+**wollmilchsau** ist tief in das [mlcartifact](https://github.com/hmsoft0815/mlcartifact)-System integriert. Bei entsprechender Konfiguration ku00f6nnen grou00dfe Ausfu00fchrungsergebnisse, Diagramme oder komplexe Datenstrukturen automatisch als persistente Artefakte gespeichert werden.
+
+**So funktioniert es:**
+1. Wollmilchsau fu00fchrt deinen TypeScript/JavaScript-Code aus.
+2. Generiert der Code ein "Artefakt" (u00fcber interne Helper), wird dieses sicher im **artifact-server** abgelegt.
+3. Das LLM erhu00e4lt eine Artefakt-ID und kann diese dem Benutzer pru00e4sentieren.
+
+> [!TIP]
+> **Best Practice:** Betreibe den `artifact-server` parallel zur `wollmilchsau`, um den vollen Funktionsumfang zu nutzen. Starte den Server mit `artifact-server -grpc-addr :9590`.
+
+---
 ## 🚀 Ausblick: MCP-Orchestrierung
 
 In Zukunft soll **wollmilchsau** als Orchestrator für andere MCP-Server fungieren. Durch ein Fetch-ähnliches Interface innerhalb der Sandbox können Skripte Daten von anderen Servern (z. B. Datenbanken) abrufen und verarbeiten.
