@@ -48,8 +48,5 @@ nfpms:
       - src: README.md
         dst: /usr/share/doc/wollmilchsau/README.md
 
-attest:
-  - artifacts: checksum
-
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
