@@ -10,3 +10,7 @@ const (
 	KeywordTimeout = "TIMEOUT"
 	KeywordComment = "#"
 )
+
+const (
+	onlyAllowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/"
+)

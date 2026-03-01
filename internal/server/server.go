@@ -9,12 +9,13 @@ import (
 
 // WollmilchsauServer wraps the MCP server with additional configuration.
 type WollmilchsauServer struct {
-	MCPServer *server.MCPServer
-	LogDir    string
+	MCPServer       *server.MCPServer
+	LogDir          string
+	EnableArtifacts bool
 }
 
 // New creates a new MCP server wrapper for TypeScript execution.
-func New(logDir string) *WollmilchsauServer {
+func New(logDir string, enableArtifacts bool) *WollmilchsauServer {
 	s := server.NewMCPServer(
 		ServerName,
 		ServerVersion,
@@ -23,13 +24,16 @@ func New(logDir string) *WollmilchsauServer {
 	)
 
 	ws := &WollmilchsauServer{
-		MCPServer: s,
-		LogDir:    logDir,
+		MCPServer:       s,
+		LogDir:          logDir,
+		EnableArtifacts: enableArtifacts,
 	}
 
-	s.AddTool(toolExecuteScript(), ws.handleExecuteScript)
-	s.AddTool(toolExecuteProject(), ws.handleExecuteProject)
-	s.AddTool(toolExecuteArtifact(), ws.handleExecuteArtifact)
+	s.AddTool(toolExecuteScript(enableArtifacts), ws.handleExecuteScript)
+	s.AddTool(toolExecuteProject(enableArtifacts), ws.handleExecuteProject)
+	if enableArtifacts {
+		s.AddTool(toolExecuteArtifact(enableArtifacts), ws.handleExecuteArtifact)
+	}
 	s.AddTool(toolCheckSyntax(), ws.handleCheckSyntax)
 
 	s.AddPrompt(mcp.NewPrompt(PromptUsage, mcp.WithPromptDescription(PromptUsageDescription)), ws.handlePromptUsage)

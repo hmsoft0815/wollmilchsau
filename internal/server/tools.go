@@ -6,13 +6,16 @@ import (
 )
 
 // GetTools returns the definitions of all tools registered in this server.
-func GetTools() []mcp.Tool {
-	return []mcp.Tool{
-		toolExecuteScript(),
-		toolExecuteProject(),
-		toolExecuteArtifact(),
+func GetTools(enableArtifacts bool) []mcp.Tool {
+	tools := []mcp.Tool{
+		toolExecuteScript(enableArtifacts),
+		toolExecuteProject(enableArtifacts),
 		toolCheckSyntax(),
 	}
+	if enableArtifacts {
+		tools = append(tools, toolExecuteArtifact(enableArtifacts))
+	}
+	return tools
 }
 
 func toolCheckSyntax() mcp.Tool {
@@ -26,10 +29,10 @@ func toolCheckSyntax() mcp.Tool {
 	)
 }
 
-func toolExecuteScript() mcp.Tool {
+func toolExecuteScript(enableArtifacts bool) mcp.Tool {
 	return mcp.NewTool(
 		ToolExecuteScript,
-		mcp.WithDescription(ToolExecuteScriptDescription),
+		mcp.WithDescription(GetToolExecuteScriptDescription(enableArtifacts)),
 		mcp.WithString(ParamCode,
 			mcp.Required(),
 			mcp.Description(ParamCodeDescription),
@@ -40,10 +43,10 @@ func toolExecuteScript() mcp.Tool {
 	)
 }
 
-func toolExecuteProject() mcp.Tool {
+func toolExecuteProject(enableArtifacts bool) mcp.Tool {
 	tool := mcp.NewTool(
 		ToolExecuteProject,
-		mcp.WithDescription(ToolExecuteProjectDescription),
+		mcp.WithDescription(GetToolExecuteProjectDescription(enableArtifacts)),
 	)
 
 	// Manually add the complex 'files' property since helper functions are limited
@@ -74,10 +77,10 @@ func toolExecuteProject() mcp.Tool {
 	return tool
 }
 
-func toolExecuteArtifact() mcp.Tool {
+func toolExecuteArtifact(enableArtifacts bool) mcp.Tool {
 	return mcp.NewTool(
 		ToolExecuteArtifact,
-		mcp.WithDescription(ToolExecuteArtifactDescription),
+		mcp.WithDescription(GetToolExecuteArtifactDescription(enableArtifacts)),
 		mcp.WithString(ParamArtifactID,
 			mcp.Required(),
 			mcp.Description(ParamArtifactIDDescription),

@@ -18,7 +18,7 @@ func (s *WollmilchsauServer) handlePromptUsage(ctx context.Context, req mcp.GetP
 		Messages: []mcp.PromptMessage{
 			{
 				Role:    "system",
-				Content: mcp.NewTextContent(PromptUsageText),
+				Content: mcp.NewTextContent(GetPromptUsageText(s.EnableArtifacts)),
 			},
 		},
 	}, nil

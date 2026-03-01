@@ -71,13 +71,13 @@ func validateFilename(name string) error {
 	return checkReservedNames(name)
 }
 
+// now with check for allowed chars - which should never be a problem unless
+// someone tries to be clever or using chinese chars or whatever
 func checkSyntaxAndChars(name string) error {
 	for _, r := range name {
-		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') ||
-			r == '.' || r == '_' || r == '/' || r == '-' {
-			continue
+		if !strings.ContainsRune(onlyAllowedChars, r) {
+			return fmt.Errorf("invalid character %q in file name: %q (only alphanumeric, '.', '_', '-', '/' allowed)", r, name)
 		}
-		return fmt.Errorf("invalid character %q in file name: %q (only alphanumeric, '.', '_', '-', '/' allowed)", r, name)
 	}
 
 	if strings.Contains(name, "//") {
