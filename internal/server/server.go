@@ -113,13 +113,17 @@ func (s *WollmilchsauServer) handleCheckSyntax(ctx context.Context, req mcp.Call
 			meta.Summary = "Internal check error: " + err.Error()
 		}
 		return &mcp.CallToolResult{
-			Content: []mcp.Content{mcp.NewTextContent("### Syntax Check Failed\n" + mustJSON(meta))},
-			IsError: true,
+			Content:           []mcp.Content{mcp.NewTextContent("### Syntax Check Failed\n" + mustJSON(meta))},
+			StructuredContent: meta,
+			IsError:           true,
 		}, nil
 	}
 
 	meta.Summary = "Syntax is valid"
-	return mcp.NewToolResultText("### Syntax Check Passed\n" + mustJSON(meta)), nil
+	return &mcp.CallToolResult{
+		Content:           []mcp.Content{mcp.NewTextContent("### Syntax Check Passed\n" + mustJSON(meta))},
+		StructuredContent: meta,
+	}, nil
 }
 
 func toolExecuteScript() mcp.Tool {
@@ -284,8 +288,9 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 			s.maybeLogRequest(ctx, toolName, plan, result)
 
 			return &mcp.CallToolResult{
-				Content: []mcp.Content{mcp.NewTextContent("### Build Failure\n" + mustJSON(meta))},
-				IsError: true,
+				Content:           []mcp.Content{mcp.NewTextContent("### Build Failure\n" + mustJSON(meta))},
+				StructuredContent: meta,
+				IsError:           true,
 			}, nil
 		}
 		res := mcp.NewToolResultText("bundle error: " + bundleErr.Error())
@@ -337,8 +342,9 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 	slog.Info("tool executed", "tool", toolName, "summary", result.Summary, "duration_ms", result.DurationMs, "success", result.Success)
 
 	return &mcp.CallToolResult{
-		Content: contents,
-		IsError: !result.Success && result.ExitCode != 0,
+		Content:           contents,
+		StructuredContent: meta,
+		IsError:           !result.Success && result.ExitCode != 0,
 	}, nil
 }
 
