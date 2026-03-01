@@ -238,7 +238,11 @@ func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, req mcp.
 	if err != nil {
 		return mcp.NewToolResultErrorFromErr("Failed to connect to artifact service", err), nil
 	}
-	defer cli.Close()
+	defer func() {
+		if closeErr := cli.Close(); closeErr != nil {
+			slog.Error("Failed to close artifact client", "error", closeErr)
+		}
+	}()
 
 	res, err := cli.Read(ctx, artifactID)
 	if err != nil {

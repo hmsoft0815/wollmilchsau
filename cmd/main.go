@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/mark3labs/mcp-go/server"
 	mcpserver "github.com/hmsoft0815/wollmilchsau/internal/server"
+	"github.com/mark3labs/mcp-go/server"
 	v8 "rogchap.com/v8go"
 )
 
