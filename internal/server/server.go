@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/mark3labs/mcp-go/server"
 	"github.com/hmsoft0815/mlcartifact"
 	"github.com/hmsoft0815/wollmilchsau/internal/bundler"
 	"github.com/hmsoft0815/wollmilchsau/internal/executor"
 	"github.com/hmsoft0815/wollmilchsau/internal/parser"
 	"github.com/hmsoft0815/wollmilchsau/internal/requestlog"
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 )
 
 // WollmilchsauServer wraps the MCP server with additional configuration.
@@ -41,6 +41,7 @@ func New(logDir string) *WollmilchsauServer {
 		ServerName,
 		ServerVersion,
 		server.WithToolCapabilities(true),
+		server.WithPromptCapabilities(true),
 	)
 
 	ws := &WollmilchsauServer{
@@ -52,7 +53,22 @@ func New(logDir string) *WollmilchsauServer {
 	s.AddTool(toolExecuteProject(), ws.handleExecuteProject)
 	s.AddTool(toolExecuteArtifact(), ws.handleExecuteArtifact)
 	s.AddTool(toolCheckSyntax(), ws.handleCheckSyntax)
+
+	s.AddPrompt(mcp.NewPrompt(PromptUsage, mcp.WithPromptDescription(PromptUsageDescription)), ws.handlePromptUsage)
+
 	return ws
+}
+
+func (s *WollmilchsauServer) handlePromptUsage(ctx context.Context, req mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+	return &mcp.GetPromptResult{
+		Description: "Instructions on when to offload thinking to wollmilchsau",
+		Messages: []mcp.PromptMessage{
+			{
+				Role:    "system",
+				Content: mcp.NewTextContent(PromptUsageText),
+			},
+		},
+	}, nil
 }
 
 func toolCheckSyntax() mcp.Tool {

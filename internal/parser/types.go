@@ -25,6 +25,7 @@ type ParseError struct {
 	Message string `json:"message"` // Detailed error description
 }
 
+// will send back our own error type as string
 func (e *ParseError) Error() string {
 	if e.Line > 0 {
 		return fmt.Sprintf("parse error on line %d: %s", e.Line, e.Message)

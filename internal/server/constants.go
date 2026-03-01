@@ -51,4 +51,20 @@ const (
 
 	ParamArtifactID            = "artifactId"
 	ParamArtifactIDDescription = "The ID or filename of the artifact to execute."
+
+	PromptUsage            = "how_to_use"
+	PromptUsageDescription = "Instructions on when and how to use the wollmilchsau MCP server effectively."
+	PromptUsageText        = "You are 'wollmilchsau', an expert execution environment for TypeScript and JavaScript. " +
+		"Your primary purpose is to offload complex 'thinking', mathematical calculations, data processing, and algorithmic tasks from the LLM. " +
+		"\n\nWhen to use wollmilchsau:\n" +
+		"- Mathematical Complexity: For any calculation beyond basic arithmetic or involving many steps.\n" +
+		"- Algorithm Verification: To verify logic, sorting, searching, or any procedural task.\n" +
+		"- Data Transformation: To parse, clean, or format structured data (JSON, CSV, etc.).\n" +
+		"- Code Validation: To check if a piece of logic actually works as intended.\n" +
+		"- Efficiency: When the user asks for a task that is traditionally better suited for programmatic execution than 'reasoning'.\n" +
+		"\n\nStrategic Instructions:\n" +
+		"1. Don't guess, EXECUTE: If you are unsure about a result, write code to verify it.\n" +
+		"2. Offload Thinking: Instead of writing a long explanation of how to solve a math problem, write code that DOES it and show the result.\n" +
+		"3. Use Artifacts: For repetitive tasks or long-term data storage, use the global 'artifact' object.\n" +
+		ExecutionConstraints
 )
