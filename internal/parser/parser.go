@@ -47,16 +47,71 @@ func ValidatePlan(plan *ExecutionPlan) error {
 	return nil
 }
 
-// validateFilename rejects path traversal and absolute paths.
+// validateFilename rejects path traversal, absolute paths and invalid characters.
 func validateFilename(name string) error {
-	if strings.HasPrefix(name, "/") {
+	if name == "" {
+		return fmt.Errorf("file name must not be empty")
+	}
+
+	// 1. Basic path traversal & absolute path checks
+	if strings.HasPrefix(name, "/") || strings.HasPrefix(name, "\\") {
 		return fmt.Errorf("file name must not be absolute: %q", name)
 	}
 	if strings.Contains(name, "..") {
 		return fmt.Errorf("file name must not contain '..': %q", name)
 	}
-	if strings.ContainsAny(name, "\x00\\") {
-		return fmt.Errorf("invalid character in file name: %q", name)
+
+	// 2. Character whitelist: [a-zA-Z0-9._/-]
+	// 3. Structural issues
+	if err := checkSyntaxAndChars(name); err != nil {
+		return err
+	}
+
+	// 4. Windows reserved names (case-insensitive, all segments)
+	return checkReservedNames(name)
+}
+
+func checkSyntaxAndChars(name string) error {
+	for _, r := range name {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') ||
+			r == '.' || r == '_' || r == '/' || r == '-' {
+			continue
+		}
+		return fmt.Errorf("invalid character %q in file name: %q (only alphanumeric, '.', '_', '-', '/' allowed)", r, name)
+	}
+
+	if strings.Contains(name, "//") {
+		return fmt.Errorf("file name must not contain consecutive slashes: %q", name)
+	}
+	if strings.HasPrefix(name, "./") || strings.HasSuffix(name, "/") || strings.HasSuffix(name, ".") {
+		return fmt.Errorf("invalid file name structure: %q", name)
 	}
 	return nil
+}
+
+func checkReservedNames(name string) error {
+	segments := strings.Split(name, "/")
+	for _, seg := range segments {
+		base := strings.ToUpper(seg)
+		if dotIdx := strings.Index(base, "."); dotIdx != -1 {
+			base = base[:dotIdx]
+		}
+
+		if isReserved(base) {
+			return fmt.Errorf("file name contains reserved system name: %q", seg)
+		}
+	}
+	return nil
+}
+
+func isReserved(base string) bool {
+	switch base {
+	case "CON", "PRN", "AUX", "NUL":
+		return true
+	case "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9":
+		return true
+	case "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9":
+		return true
+	}
+	return false
 }

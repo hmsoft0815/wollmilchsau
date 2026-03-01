@@ -5,13 +5,15 @@ import (
 	"testing"
 )
 
-func TestValidatePlan_Success(t *testing.T) {
+const mainTS = "main.ts"
+
+func TestValidatePlanSuccess(t *testing.T) {
 	plan := &ExecutionPlan{
 		Files: []VirtualFile{
 			{Name: "a.ts", Content: "export const a = 1;"},
-			{Name: "main.ts", Content: "import { a } from './a'; console.log(a);"},
+			{Name: mainTS, Content: "import { a } from './a'; console.log(a);"},
 		},
-		EntryPoint: "main.ts",
+		EntryPoint: mainTS,
 		TimeoutMs:  5000,
 	}
 
@@ -21,7 +23,7 @@ func TestValidatePlan_Success(t *testing.T) {
 	}
 }
 
-func TestValidatePlan_MissingEntryPoint(t *testing.T) {
+func TestValidatePlanMissingEntryPoint(t *testing.T) {
 	plan := &ExecutionPlan{
 		Files: []VirtualFile{
 			{Name: "a.ts", Content: "1"},
@@ -34,10 +36,10 @@ func TestValidatePlan_MissingEntryPoint(t *testing.T) {
 	}
 }
 
-func TestValidatePlan_EmptyFiles(t *testing.T) {
+func TestValidatePlanEmptyFiles(t *testing.T) {
 	plan := &ExecutionPlan{
 		Files:      []VirtualFile{},
-		EntryPoint: "main.ts",
+		EntryPoint: mainTS,
 	}
 	err := ValidatePlan(plan)
 	if err == nil {
@@ -45,15 +47,39 @@ func TestValidatePlan_EmptyFiles(t *testing.T) {
 	}
 }
 
-func TestValidatePlan_InvalidFilename(t *testing.T) {
-	plan := &ExecutionPlan{
-		Files: []VirtualFile{
-			{Name: "../secret.ts", Content: "1"},
-		},
-		EntryPoint: "../secret.ts",
+func TestValidateFilename(t *testing.T) {
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{"main.ts", false},
+		{"src/utils.ts", false},
+		{"_hidden.js", false},
+		{"my-file_123.test.ts", false},
+		{"", true},
+		{"/abs/path.ts", true},
+		{"\\win\\path.ts", true},
+		{"../traversal.ts", true},
+		{"src/../traversal.ts", true},
+		{"./start.ts", true},
+		{"end/", true},
+		{"dots.", true},
+		{"space in name.ts", true},
+		{"special!@#.ts", true},
+		{"double//slash.ts", true},
+		{"nul", true},
+		{"aux.ts", true},
+		{"com1/file.ts", true},
+		{"CON.js", true},
+		{"LPT9", true},
 	}
-	err := ValidatePlan(plan)
-	if err == nil {
-		t.Fatal("expected error for path traversal in filename")
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateFilename(tt.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateFilename(%q) error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			}
+		})
 	}
 }
