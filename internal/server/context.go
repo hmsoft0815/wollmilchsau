@@ -11,7 +11,7 @@ const (
 	ContextKeyRemoteIP contextKey = "remote_ip"
 )
 
-// WithRemoteIP adds the remote IP to the context.
+// WithRemoteIP adds the remote IP to the context. (SSE only)
 func WithRemoteIP(ctx context.Context, ip string) context.Context {
 	return context.WithValue(ctx, ContextKeyRemoteIP, ip)
 }

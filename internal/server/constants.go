@@ -29,7 +29,7 @@ const (
 		"Ideal for complex logic spanning multiple modules. " +
 		"Requires a list of virtual files and an entry point file." +
 		ExecutionConstraints
-
+		// only if enabled
 	ToolExecuteArtifact            = "execute_artifact"
 	ToolExecuteArtifactDescription = "Executes a TypeScript or JavaScript file stored as an artifact. " +
 		"Ideal for running previously saved code artifacts." +
