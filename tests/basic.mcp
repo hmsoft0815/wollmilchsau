@@ -1,0 +1,17 @@
+// Basic Wollmilchsau Tool Test
+
+// 1. Test execute_script (Math)
+call_tool execute_script "console.log(15 * 5)"
+assert_contains "75"
+set_var math_res structuredContent.success
+assert_equals $math_res "true"
+
+// 2. Test syntax_check (Valid)
+call_tool check_syntax "const x: number = 42;"
+assert_contains "Syntax Check Passed"
+
+// 3. Test syntax_check (Invalid)
+call_tool check_syntax "const x ="
+assert_contains "Syntax Check Failed"
+set_var error_msg structuredContent.summary
+assert_contains "Unexpected end of file"

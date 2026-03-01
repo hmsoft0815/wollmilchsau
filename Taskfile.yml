@@ -30,6 +30,30 @@ tasks:
     desc: Run all tests
     cmds:
       - go test ./...
+      - task: test-mcp
+      - task: test-mcp-extended
+
+  test-mcp:
+    desc: Run basic interaction tests using mcp-tester
+    deps: [build]
+    vars:
+      MCP_TESTER: mcp-tester
+    cmds:
+      - "{{.MCP_TESTER}} test --command {{.BINARY}} --script tests/basic.mcp"
+    preconditions:
+      - sh: command -v {{.MCP_TESTER}}
+        msg: "mcp-tester not found. Please install it first."
+
+  test-mcp-extended:
+    desc: Run extended interaction tests (multi-file) using mcp-tester
+    deps: [build]
+    vars:
+      MCP_TESTER: mcp-tester
+    cmds:
+      - "{{.MCP_TESTER}} test --command {{.BINARY}} --script tests/extended.mcp"
+    preconditions:
+      - sh: command -v {{.MCP_TESTER}}
+        msg: "mcp-tester not found."
 
   tidy:
     desc: Tidy go.mod

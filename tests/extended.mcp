@@ -1,0 +1,16 @@
+// Extended Wollmilchsau Project Test (Multi-file)
+
+// Test execute_project with two files using heredoc
+call_tool execute_project "main.ts" <<EOF
+[
+  {"name":"main.ts", "content":"import {add} from \"./lib.ts\"; console.log(add(10, 20))"},
+  {"name":"lib.ts", "content":"export function add(a, b) { return a + b }"}
+]
+EOF
+
+assert_contains "Execution finished successfully"
+assert_contains "30"
+
+// Verify structured content also works here
+set_var success structuredContent.success
+assert_equals $success "true"
