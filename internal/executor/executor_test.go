@@ -73,7 +73,7 @@ func TestExecute_Polyfills(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := Execute(ctx, tt.code, "test.js", nil)
+			res := Execute(ctx, tt.code, "test.js", nil, "")
 			if !res.Success {
 				t.Errorf("Execution failed: %s\nStderr: %s", res.Summary, res.Stderr)
 				return

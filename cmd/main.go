@@ -21,6 +21,7 @@ func main() {
 	addrFlag := flag.String("addr", "", "Listen address for SSE (e.g. ':8080'). If empty, uses stdio.")
 	logDirFlag := flag.String("log-dir", "", "Directory to store complete request/response ZIP archives (optional)")
 	enableArtifactsFlag := flag.Bool("enable-artifacts", false, "Enable the artifact service integration (artifact global object and execute_artifact tool)")
+	artifactAddrFlag := flag.String("artifact-addr", "", "Address of the mlcartifact gRPC server (optional, default uses local or env)")
 	flag.Parse()
 
 	if *versionFlag {
@@ -37,7 +38,7 @@ func main() {
 		return
 	}
 
-	ws := mcpserver.New(*logDirFlag, *enableArtifactsFlag)
+	ws := mcpserver.New(*logDirFlag, *enableArtifactsFlag, *artifactAddrFlag)
 
 	if *addrFlag != "" {
 		// SSE Mode

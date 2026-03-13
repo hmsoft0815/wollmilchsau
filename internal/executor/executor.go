@@ -23,9 +23,10 @@ import (
 // @Param js body string true "Bundled JavaScript code"
 // @Param filename body string true "Name of the entry file for stack traces"
 // @Param sm body object false "Source map for position resolution"
-// @Success 200 {object} Result
-func Execute(ctx context.Context, js string, filename string, sm *sourcemap.SourceMap) *Result {
+// Success 200 {object} Result
+func Execute(ctx context.Context, js string, filename string, sm *sourcemap.SourceMap, artifactAddr string) *Result {
 	start := time.Now()
+
 	res := &Result{Diagnostics: []Diagnostic{}}
 
 	iso := v8.NewIsolate()
@@ -65,7 +66,14 @@ func Execute(ctx context.Context, js string, filename string, sm *sourcemap.Sour
 
 	// Create one shared artifact client — used by both the low-level `artifact.*`
 	// API and the new `wollmilchsau.openArtifact()` high-level API.
-	cli, artErr := mlcartifact.NewClient()
+	var cli *mlcartifact.Client
+	var artErr error
+	if artifactAddr != "" {
+		cli, artErr = mlcartifact.NewClient(mlcartifact.WithAddr(artifactAddr))
+	} else {
+		cli, artErr = mlcartifact.NewClient()
+	}
+
 	if artErr == nil {
 		if err := InjectArtifactServiceWithClient(iso, v8ctx, cli); err != nil {
 			slog.Error("failed to inject artifact service", "err", err)

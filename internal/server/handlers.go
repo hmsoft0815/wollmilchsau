@@ -114,7 +114,13 @@ func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, req mcp.
 	timeout, _ := args[ParamTimeoutMs].(float64)
 
 	// 1. Fetch artifact from service
-	cli, err := mlcartifact.NewClient()
+	var cli *mlcartifact.Client
+	var err error
+	if s.ArtifactAddr != "" {
+		cli, err = mlcartifact.NewClient(mlcartifact.WithAddr(s.ArtifactAddr))
+	} else {
+		cli, err = mlcartifact.NewClient()
+	}
 	if err != nil {
 		return mcp.NewToolResultErrorFromErr("Failed to connect to artifact service", err), nil
 	}

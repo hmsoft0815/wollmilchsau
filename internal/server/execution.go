@@ -61,7 +61,7 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 	execCtx, cancel := context.WithTimeout(ctx, time.Duration(plan.TimeoutMs)*time.Millisecond)
 	defer cancel()
 
-	result := executor.Execute(execCtx, bundle.JS, plan.EntryPoint, bundle.SourceMap)
+	result := executor.Execute(execCtx, bundle.JS, plan.EntryPoint, bundle.SourceMap, s.ArtifactAddr)
 
 	for _, w := range bundle.Warnings {
 		result.Diagnostics = append(result.Diagnostics, executor.Diagnostic{

@@ -14,6 +14,7 @@ type WollmilchsauServer struct {
 	MCPServer       *server.MCPServer
 	LogDir          string
 	EnableArtifacts bool
+	ArtifactAddr    string
 }
 
 // serverIcon is the default icon for the wollmilchsau server (a "terminal/code" glyph).
@@ -23,7 +24,7 @@ var serverIcon = mcp.Icon{
 }
 
 // New creates a new MCP server wrapper for TypeScript execution.
-func New(logDir string, enableArtifacts bool) *WollmilchsauServer {
+func New(logDir string, enableArtifacts bool, artifactAddr string) *WollmilchsauServer {
 	hooks := &server.Hooks{}
 	hooks.AddAfterInitialize(func(_ context.Context, _ any, _ *mcp.InitializeRequest, result *mcp.InitializeResult) {
 		result.ServerInfo.Title = ServerTitle
@@ -42,6 +43,7 @@ func New(logDir string, enableArtifacts bool) *WollmilchsauServer {
 		MCPServer:       s,
 		LogDir:          logDir,
 		EnableArtifacts: enableArtifacts,
+		ArtifactAddr:    artifactAddr,
 	}
 
 	s.AddTool(toolExecuteScript(enableArtifacts), ws.handleExecuteScript)

@@ -92,7 +92,7 @@ docker run -p 8000:8000 wollmilchsau
 ./build/wollmilchsau -log-dir /var/log/wollmilchsau
 
 # enable artifact service (required for artifact.* and openArtifact())
-./build/wollmilchsau -enable-artifacts
+./build/wollmilchsau -enable-artifacts -artifact-addr localhost:50051
 
 # show version and tool schema
 ./build/wollmilchsau -version
@@ -106,6 +106,7 @@ docker run -p 8000:8000 wollmilchsau
 | `-addr` | Listen address for SSE (e.g. `:8080`). If empty, uses stdio. |
 | `-log-dir` | Directory to store complete request/response ZIP archives (optional). |
 | `-enable-artifacts` | **Required** to enable the artifact service integration (`artifact` global object, `wollmilchsau.openArtifact`, and `execute_artifact` tool). |
+| `-artifact-addr` | gRPC address of the `mlcartifact` server (e.g. `localhost:50051`). Optional, uses defaults if empty. |
 | `-dump` | Dumps the MCP tool schema to stdout and exits. |
 | `-version` | Shows version information and exits. |
 
