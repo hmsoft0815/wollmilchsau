@@ -82,15 +82,32 @@ docker run -p 8000:8000 wollmilchsau
 ### Starten
 
 ```bash
-# stdio-Modus (für Claude Desktop)
+# stdio-Modus (Standard, für Claude Desktop)
 ./build/wollmilchsau
 
 # SSE/HTTP-Modus (für Remote-Agenten)
 ./build/wollmilchsau -addr :8080
 
-# mit vollständigem Request-Logging
+# mit vollständigem Request-Logging (ZIP-Archive)
 ./build/wollmilchsau -log-dir /var/log/wollmilchsau
+
+# Artefakt-Service aktivieren (erforderlich für artifact.* und openArtifact())
+./build/wollmilchsau -enable-artifacts
+
+# Version und Tool-Schema anzeigen
+./build/wollmilchsau -version
+./build/wollmilchsau -dump
 ```
+
+#### Kommandozeilen-Flags
+
+| Flag | Beschreibung |
+|---|---|
+| `-addr` | Listen-Adresse für SSE (z.B. `:8080`). Falls leer, wird stdio verwendet. |
+| `-log-dir` | Verzeichnis zur Speicherung vollständiger Request/Response ZIP-Archive (optional). |
+| `-enable-artifacts` | **Erforderlich**, um die Artefakt-Integration zu aktivieren (`artifact` Objekt, `wollmilchsau.openArtifact` und das `execute_artifact` Tool). |
+| `-dump` | Gibt das MCP Tool-Schema auf stdout aus und beendet das Programm. |
+| `-version` | Zeigt Versionsinformationen an und beendet das Programm. |
 
 ---
 
