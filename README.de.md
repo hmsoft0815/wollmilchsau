@@ -42,7 +42,9 @@ Füge das deinem System-Prompt hinzu:
 | 🔐 **Sandboxed V8** | Kein Netzwerk, kein Dateisystem, keine Node.js APIs |
 | ⚡ **In-Process esbuild** | TypeScript-Bundling in Mikrosekunden, kein Subprocess |
 | 🗺️ **Source Maps** | Fehler zeigen auf die exakte TypeScript-Zeile |
-| 📦 **Artefakt-Integration** | Große Ausgaben werden automatisch in `mlcartifact` gespeichert |
+| 🖼️ **Tool-Icons** | Visuelle Darstellung in MCP-kompatiblen Clients |
+| 📦 **Artefakt-Integration** | Automatisierte Speicherung großer Ausgaben via `openArtifact()` |
+| 📊 **Strukturierte Ausgabe** | JSON-Schema basierte Ergebnisse für zuverlässiges Tool-Parsing |
 | 🗂️ **ZIP Request Logging** | Vollständiger Audit-Trail jeder LLM-Codeausführung |
 | 🔌 **stdio + SSE** | Lokal (Claude Desktop) und remote nutzbar |
 
@@ -145,15 +147,21 @@ Die Ausführungsumgebung ist streng isoliert:
 
 ## Artefakt-Integration
 
-Wenn [`mlcartifact`](https://github.com/hmsoft0815/mlcartifact) läuft, werden große Ausgaben (Diagramme, Berichte, Datensätze) automatisch als persistente Artefakte gespeichert. Das LLM erhält eine Artefakt-ID statt eines riesigen Textblocks.
+Wenn [`mlcartifact`](https://github.com/hmsoft0815/mlcartifact) läuft, können große Ausgaben (Diagramme, Berichte, Datensätze) als persistente Artefakte gespeichert werden.
 
-```bash
-# Artifact-Server parallel zu wollmilchsau starten
-artifact-server -grpc-addr :9590
+**wollmilchsau** bietet hierfür eine High-Level-API:
+
+```typescript
+const fh = wollmilchsau.openArtifact("bericht.csv", "text/csv");
+fh.write("id,name\n1,Alpha\n2,Beta");
+const meta = fh.close(); 
+// Rückgabe: { id, uri, name, mimeType, fileSize }
 ```
 
+Bei Verwendung von `openArtifact()` fügt **wollmilchsau** automatisch einen MCP `resource_link` zur Tool-Antwort hinzu, sodass der LLM-Client das Artefakt sofort anzeigen oder herunterladen kann.
+
 > [!TIP]
-> Diese Kombination ist besonders leistungsfähig für Report-Generierungs-Workflows, bei denen der Agent datenverarbeitenden Code schreibt und das Ergebnis automatisch persistent gespeichert wird.
+> Diese Kombination ist besonders leistungsfähig für Report-Generierungs-Workflows, bei denen der Agent datenverarbeitenden Code schreibt und das Ergebnis automatisch persistent gespeichert und verlinkt wird.
 
 ---
 

@@ -7,46 +7,45 @@ import (
 	"strings"
 	"testing"
 
+	"connectrpc.com/connect"
 	"github.com/hmsoft0815/mlcartifact"
 	pb "github.com/hmsoft0815/mlcartifact/proto"
-	"google.golang.org/grpc"
 	v8 "rogchap.com/v8go"
 )
 
 type mockArtifactService struct {
-	pb.UnimplementedArtifactServiceServer
 	lastWrite *pb.WriteRequest
 	readData  []byte
 	listItems []*pb.ArtifactInfo
 }
 
-func (m *mockArtifactService) Write(ctx context.Context, req *pb.WriteRequest, opts ...grpc.CallOption) (*pb.WriteResponse, error) {
-	m.lastWrite = req
-	return &pb.WriteResponse{
+func (m *mockArtifactService) Write(ctx context.Context, req *connect.Request[pb.WriteRequest]) (*connect.Response[pb.WriteResponse], error) {
+	m.lastWrite = req.Msg
+	return connect.NewResponse(&pb.WriteResponse{
 		Id:       "test-id",
-		Filename: req.Filename,
+		Filename: req.Msg.Filename,
 		Uri:      "mcp:///test-id",
-	}, nil
+	}), nil
 }
 
-func (m *mockArtifactService) Read(ctx context.Context, req *pb.ReadRequest, opts ...grpc.CallOption) (*pb.ReadResponse, error) {
-	return &pb.ReadResponse{
+func (m *mockArtifactService) Read(ctx context.Context, req *connect.Request[pb.ReadRequest]) (*connect.Response[pb.ReadResponse], error) {
+	return connect.NewResponse(&pb.ReadResponse{
 		Content:  m.readData,
 		MimeType: "text/plain",
 		Filename: "test.txt",
-	}, nil
+	}), nil
 }
 
-func (m *mockArtifactService) List(ctx context.Context, req *pb.ListRequest, opts ...grpc.CallOption) (*pb.ListResponse, error) {
-	return &pb.ListResponse{
+func (m *mockArtifactService) List(ctx context.Context, req *connect.Request[pb.ListRequest]) (*connect.Response[pb.ListResponse], error) {
+	return connect.NewResponse(&pb.ListResponse{
 		Items: m.listItems,
-	}, nil
+	}), nil
 }
 
-func (m *mockArtifactService) Delete(ctx context.Context, req *pb.DeleteRequest, opts ...grpc.CallOption) (*pb.DeleteResponse, error) {
-	return &pb.DeleteResponse{
+func (m *mockArtifactService) Delete(ctx context.Context, req *connect.Request[pb.DeleteRequest]) (*connect.Response[pb.DeleteResponse], error) {
+	return connect.NewResponse(&pb.DeleteResponse{
 		Deleted: true,
-	}, nil
+	}), nil
 }
 
 func TestArtifactBridge(t *testing.T) {

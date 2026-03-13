@@ -96,6 +96,16 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 		contents = append(contents, mcp.NewTextContent("### Standard Error\n```\n"+result.Stderr+"\n```"))
 	}
 
+	// Append resource_link items for any artifacts created via wollmilchsau.openArtifact()
+	for _, a := range result.CreatedArtifacts {
+		contents = append(contents, mcp.ResourceLink{
+			Type:     "resource_link",
+			URI:      a.URI,
+			Name:     a.Name,
+			MIMEType: a.MimeType,
+		})
+	}
+
 	// Log to ZIP if enabled
 	s.maybeLogRequest(ctx, toolName, plan, result)
 

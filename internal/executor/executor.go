@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hmsoft0815/mlcartifact"
 	"github.com/hmsoft0815/wollmilchsau/internal/sourcemap"
 	v8 "rogchap.com/v8go"
 )
@@ -62,8 +63,18 @@ func Execute(ctx context.Context, js string, filename string, sm *sourcemap.Sour
 		slog.Error("failed to inject polyfills", "err", err)
 	}
 
-	if err := InjectArtifactService(iso, v8ctx); err != nil {
-		slog.Error("failed to inject artifact service", "err", err)
+	// Create one shared artifact client — used by both the low-level `artifact.*`
+	// API and the new `wollmilchsau.openArtifact()` high-level API.
+	cli, artErr := mlcartifact.NewClient()
+	if artErr == nil {
+		if err := InjectArtifactServiceWithClient(iso, v8ctx, cli); err != nil {
+			slog.Error("failed to inject artifact service", "err", err)
+		}
+		if err := InjectOpenArtifact(iso, v8ctx, cli, res); err != nil {
+			slog.Error("failed to inject wollmilchsau.openArtifact", "err", err)
+		}
+	} else {
+		slog.Warn("artifact client unavailable, skipping artifact polyfills", "err", artErr)
 	}
 
 	watchdogDone := startWatchdog(ctx, iso, 128*1024*1024)

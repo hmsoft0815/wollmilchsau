@@ -3,6 +3,8 @@
 package server
 
 import (
+	"context"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
@@ -14,13 +16,26 @@ type WollmilchsauServer struct {
 	EnableArtifacts bool
 }
 
+// serverIcon is the default icon for the wollmilchsau server (a "terminal/code" glyph).
+var serverIcon = mcp.Icon{
+	Src:      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjQgMTcgMTAgMTEgNCAxIi8+PGxpbmUgeDE9IjEyIiB5MT0iMTkiIHgyPSIyMCIgeTI9IjE5Ii8+PC9zdmc+",
+	MIMEType: mimeTypeSVG,
+}
+
 // New creates a new MCP server wrapper for TypeScript execution.
 func New(logDir string, enableArtifacts bool) *WollmilchsauServer {
+	hooks := &server.Hooks{}
+	hooks.AddAfterInitialize(func(_ context.Context, _ any, _ *mcp.InitializeRequest, result *mcp.InitializeResult) {
+		result.ServerInfo.Title = ServerTitle
+		result.ServerInfo.Icons = []mcp.Icon{serverIcon}
+	})
+
 	s := server.NewMCPServer(
 		ServerName,
 		ServerVersion,
 		server.WithToolCapabilities(true),
 		server.WithPromptCapabilities(true),
+		server.WithHooks(hooks),
 	)
 
 	ws := &WollmilchsauServer{

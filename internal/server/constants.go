@@ -3,7 +3,11 @@ package server
 
 const (
 	ServerName    = "wollmilchsau"
-	ServerVersion = "2.1.3"
+	ServerVersion = "2.2.0"
+	ServerTitle   = "Wollmilchsau – TypeScript Execution Engine"
+
+	// mimeTypeSVG is the shared MIME type constant for inline SVG icons.
+	mimeTypeSVG = "image/svg+xml"
 
 	// Constraints common to all execution tools
 	executionConstraintsBase = "\n\nExecution Environment Constraints:\n" +
@@ -23,12 +27,14 @@ const (
 
 	ToolExecuteScript     = "execute_script"
 	toolExecuteScriptDesc = "Executes a single TypeScript or JavaScript code snippet. " +
-		"Ideal for quick mathematical calculations, logic tests, and small algorithm verifications."
+		"Ideal for quick mathematical calculations, logic tests, and small algorithm verifications. " +
+		"Use this tool if the problem can be solved by writing a single TypeScript or JavaScript script."
 
 	ToolExecuteProject     = "execute_project"
 	toolExecuteProjectDesc = "Executes a multi-file TypeScript/JavaScript project. " +
 		"Ideal for complex logic spanning multiple modules. " +
-		"Requires a list of virtual files and an entry point file."
+		"Requires a list of virtual files and an entry point file. " +
+		"Use this tool if the problem requires multiple files to be solved."
 
 	ToolExecuteArtifact     = "execute_artifact"
 	toolExecuteArtifactDesc = "Executes a TypeScript or JavaScript file stored as an artifact. " +
@@ -36,7 +42,8 @@ const (
 
 	ToolCheckSyntax            = "check_syntax"
 	ToolCheckSyntaxDescription = "Checks the syntax of a TypeScript or JavaScript code snippet without executing it. " +
-		"Returns success and any syntax errors found."
+		"Returns success and any syntax errors found. " +
+		"Use this tool when you only need to validate the syntax of the code without running it."
 
 	ParamCode = "code"
 
@@ -55,6 +62,12 @@ const (
 	PromptUsageDescription = "Instructions on when and how to use the wollmilchsau MCP server effectively."
 	promptUsageTextBase    = "You are 'wollmilchsau', an expert execution environment for TypeScript and JavaScript. " +
 		"Your primary purpose is to offload complex 'thinking', mathematical calculations, data processing, and algorithmic tasks from the LLM. " +
+		"\n\nCRITICAL DIRECTIVE:\n" +
+		"If a problem can be solved by writing a TypeScript or JavaScript program or script, you MUST use the wollmilchsau tools to execute it instead of just reasoning about it.\n" +
+		"\nAvailable Tools:\n" +
+		"- execute_script: For single file execution.\n" +
+		"- execute_project: For multi-file project execution.\n" +
+		"- check_syntax: For pure syntax validation without execution.\n" +
 		"\n\nWhen to use wollmilchsau:\n" +
 		"- Mathematical Complexity: For any calculation beyond basic arithmetic or involving many steps.\n" +
 		"- Algorithm Verification: To verify logic, sorting, searching, or any procedural task.\n" +

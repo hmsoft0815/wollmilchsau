@@ -42,7 +42,9 @@ Add this to your system prompt:
 | 🔐 **Sandboxed V8** | No network, no filesystem, no Node.js APIs |
 | ⚡ **In-Process esbuild** | TypeScript bundling in microseconds, no subprocess |
 | 🗺️ **Source Maps** | Errors point to the exact TypeScript line |
-| 📦 **Artifact Integration** | Large outputs auto-saved to `mlcartifact` |
+| 🖼️ **Tool Icons** | Visual representation in MCP-compliant clients |
+| 📦 **Artifact Integration** | Automated saving of large outputs via `openArtifact()` |
+| 📊 **Structured Output** | JSON Schema based results for reliable tool parsing |
 | 🗂️ **ZIP Request Logging** | Full audit trail of every LLM code execution |
 | 🔌 **stdio + SSE** | Works locally (Claude Desktop) and remotely |
 
@@ -145,15 +147,21 @@ The execution environment is strictly isolated for safety:
 
 ## Artifact Integration
 
-When [`mlcartifact`](https://github.com/hmsoft0815/mlcartifact) is running, large outputs (charts, reports, datasets) are automatically saved as persistent artifacts. The LLM receives an artifact ID instead of a massive text blob.
+When [`mlcartifact`](https://github.com/hmsoft0815/mlcartifact) is running, large outputs (charts, reports, datasets) can be saved as persistent artifacts.
 
-```bash
-# Start the artifact server alongside wollmilchsau
-artifact-server -grpc-addr :9590
+**wollmilchsau** provides a high-level API for this:
+
+```typescript
+const fh = wollmilchsau.openArtifact("report.csv", "text/csv");
+fh.write("id,name\n1,Alpha\n2,Beta");
+const meta = fh.close(); 
+// Returns: { id, uri, name, mimeType, fileSize }
 ```
 
+When using `openArtifact()`, **wollmilchsau** automatically adds an MCP `resource_link` to the tool response, allowing the LLM client to display or download the artifact immediately.
+
 > [!TIP]
-> This combination is especially powerful for report generation workflows where the agent writes data-processing code and the result is auto-persisted.
+> This is especially powerful for report generation workflows where the agent writes data-processing code and the result is auto-persisted and linked.
 
 ---
 

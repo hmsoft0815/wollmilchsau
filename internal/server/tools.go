@@ -26,6 +26,11 @@ func toolCheckSyntax() mcp.Tool {
 			mcp.Required(),
 			mcp.Description(ParamCodeDescription),
 		),
+		mcp.WithToolIcons(mcp.Icon{
+			Src:      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik05IDExbDMgMyA4LTgtMi0yLTEwIDEwem0tMyAwbC00IDQgNCA0IDItMi00LTQtMi0yek0wIDI0aDI0Ii8+PC9zdmc+",
+			MIMEType: mimeTypeSVG,
+		}),
+		mcp.WithOutputSchema[CheckSyntaxResult](),
 	)
 }
 
@@ -40,6 +45,11 @@ func toolExecuteScript(enableArtifacts bool) mcp.Tool {
 		mcp.WithNumber(ParamTimeoutMs,
 			mcp.Description(ParamTimeoutMsDescription),
 		),
+		mcp.WithToolIcons(mcp.Icon{
+			Src:      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xNiAxOGwtMiAybC0yLTIybTQtOGw0IDRsLTQgNE0yMiAxOXYtMk0xNSA1aC0yTTUgNWgtMk01IDE1aC0yTTUgMTloLTJNMjIgNXYtMk0yMiAxOXYtMk05IDVoLTJNOSAxOWgtMk0xMyA1aC0yTTEzIDE5aC0yTTE3IDVoLTJNMjIgOXYtMiIvPjwvc3ZnPg==",
+			MIMEType: mimeTypeSVG,
+		}),
+		mcp.WithOutputSchema[ExecutionResult](),
 	)
 }
 
@@ -74,6 +84,13 @@ func toolExecuteProject(enableArtifacts bool) mcp.Tool {
 		mcp.Description(ParamTimeoutMsDescription),
 	)(&tool)
 
+	mcp.WithToolIcons(mcp.Icon{
+		Src:      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMiAyTDQgNnYxMmwxIDguNWwtOC00VjZ6TTEyIDIybDgtNGwtOC00TC04IDR6TTQgNmw4IDRsOC00TTIgMTV2MkwxMiAyMmw4LTUtMnYtMiIvPjwvc3ZnPg==",
+		MIMEType: mimeTypeSVG,
+	})(&tool)
+
+	mcp.WithOutputSchema[ExecutionResult]()(&tool)
+
 	return tool
 }
 
@@ -88,5 +105,10 @@ func toolExecuteArtifact(enableArtifacts bool) mcp.Tool {
 		mcp.WithNumber(ParamTimeoutMs,
 			mcp.Description(ParamTimeoutMsDescription),
 		),
+		mcp.WithToolIcons(mcp.Icon{
+			Src:      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xNCAydkg2YTIgMiAwIDAgMC0yIDJ2MTZhMiAyIDAgMCAwIDIgMmgxMmEyIDIgMCAwIDAgMi0yVjhsLTYtNnoiLz48cG9seWxpbmUgcG9pbnRzPSIxNCAyIDE0IDggMjAgOCIvPjwvc3ZnPg==",
+			MIMEType: mimeTypeSVG,
+		}),
+		mcp.WithOutputSchema[ExecutionResult](),
 	)
 }

@@ -22,14 +22,25 @@ type Diagnostic struct {
 	GeneratedColumn int `json:"-"`
 }
 
+// ArtifactRef holds the metadata of an artifact created during script execution.
+// It is used by the MCP tool handler to append resource_link content items.
+type ArtifactRef struct {
+	ID       string `json:"id"`
+	URI      string `json:"uri"`
+	Name     string `json:"name"`
+	MimeType string `json:"mimeType"`
+	FileSize int64  `json:"fileSize"`
+}
+
 // Result is the output of a single Execute call.
 // It contains stdout, stderr, exit code and potential diagnostics.
 type Result struct {
-	Stdout      string       `json:"stdout"`      // Standard output captured from console.log
-	Stderr      string       `json:"stderr"`      // Standard error captured from console.warn/error
-	ExitCode    int          `json:"exitCode"`    // 0 for success, non-zero for error
-	Success     bool         `json:"success"`     // true if execution finished without runtime errors
-	DurationMs  int64        `json:"durationMs"`  // execution time in milliseconds
-	Summary     string       `json:"summary"`     // High-level summary of the result
-	Diagnostics []Diagnostic `json:"diagnostics"` // list of errors/warnings with mapped positions
+	Stdout           string        `json:"stdout"`           // Standard output captured from console.log
+	Stderr           string        `json:"stderr"`           // Standard error captured from console.warn/error
+	ExitCode         int           `json:"exitCode"`         // 0 for success, non-zero for error
+	Success          bool          `json:"success"`          // true if execution finished without runtime errors
+	DurationMs       int64         `json:"durationMs"`       // execution time in milliseconds
+	Summary          string        `json:"summary"`          // High-level summary of the result
+	Diagnostics      []Diagnostic  `json:"diagnostics"`      // list of errors/warnings with mapped positions
+	CreatedArtifacts []ArtifactRef `json:"createdArtifacts"` // artifacts written via wollmilchsau.openArtifact()
 }
