@@ -16,3 +16,4 @@ test_logs/
 
 # Task runner state
 .task/
+artifact_test_server.log

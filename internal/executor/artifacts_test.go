@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"connectrpc.com/connect"
-	"github.com/hmsoft0815/mlcartifact"
+	mlcartifact "github.com/hmsoft0815/mlcartifact/client"
 	pb "github.com/hmsoft0815/mlcartifact/proto"
 	v8 "rogchap.com/v8go"
 )

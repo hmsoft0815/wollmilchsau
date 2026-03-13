@@ -5,7 +5,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/hmsoft0815/mlcartifact"
+	mlcartifact "github.com/hmsoft0815/mlcartifact/client"
 	"github.com/hmsoft0815/wollmilchsau/internal/bundler"
 	"github.com/hmsoft0815/wollmilchsau/internal/executor"
 	"github.com/hmsoft0815/wollmilchsau/internal/parser"
@@ -112,12 +112,13 @@ func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, req mcp.
 	args, _ := req.Params.Arguments.(map[string]any)
 	artifactID, _ := args[ParamArtifactID].(string)
 	timeout, _ := args[ParamTimeoutMs].(float64)
+	userID, _ := args[ParamUserID].(string)
 
 	// 1. Fetch artifact from service
 	var cli *mlcartifact.Client
 	var err error
 	if s.ArtifactAddr != "" {
-		cli, err = mlcartifact.NewClient(mlcartifact.WithAddr(s.ArtifactAddr))
+		cli, err = mlcartifact.NewClientWithAddr(s.ArtifactAddr)
 	} else {
 		cli, err = mlcartifact.NewClient()
 	}
@@ -130,7 +131,12 @@ func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, req mcp.
 		}
 	}()
 
-	res, err := cli.Read(ctx, artifactID)
+	opts := []mlcartifact.ReadOption{}
+	if userID != "" {
+		opts = append(opts, mlcartifact.WithReadUserID(userID))
+	}
+
+	res, err := cli.Read(ctx, artifactID, opts...)
 	if err != nil {
 		return mcp.NewToolResultErrorFromErr("Failed to read artifact", err), nil
 	}

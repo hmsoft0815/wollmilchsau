@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hmsoft0815/mlcartifact"
+	mlcartifact "github.com/hmsoft0815/mlcartifact/client"
 	"github.com/hmsoft0815/wollmilchsau/internal/sourcemap"
 	v8 "rogchap.com/v8go"
 )
@@ -69,7 +69,7 @@ func Execute(ctx context.Context, js string, filename string, sm *sourcemap.Sour
 	var cli *mlcartifact.Client
 	var artErr error
 	if artifactAddr != "" {
-		cli, artErr = mlcartifact.NewClient(mlcartifact.WithAddr(artifactAddr))
+		cli, artErr = mlcartifact.NewClientWithAddr(artifactAddr)
 	} else {
 		cli, artErr = mlcartifact.NewClient()
 	}

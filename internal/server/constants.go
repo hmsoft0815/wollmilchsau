@@ -3,7 +3,7 @@ package server
 
 const (
 	ServerName    = "wollmilchsau"
-	ServerVersion = "2.2.0"
+	ServerVersion = "2.2.1"
 	ServerTitle   = "Wollmilchsau – TypeScript Execution Engine"
 
 	// mimeTypeSVG is the shared MIME type constant for inline SVG icons.
@@ -18,10 +18,10 @@ const (
 		"- Limited i18n: The 'Intl' object is available but limited to 'en-US' locale.\n"
 
 	executionConstraintsArtifacts = "- Artifact Service: A global 'artifact' object is available for persistent storage:\n" +
-		"  - artifact.write(filename: string, content: string|Uint8Array, mimeType?: string, expiresHours?: number): Promise<{id, filename, uri, expires_at}>\n" +
-		"  - artifact.read(id: string): Promise<{content: Uint8Array, mime_type, filename}>\n" +
-		"  - artifact.list(): Promise<Array<{id, filename, mime_type, ...}>>\n" +
-		"  - artifact.delete(id: string): Promise<{deleted: boolean}>\n"
+		"  - artifact.write(filename: string, content: string|Uint8Array, mimeType?: string, expiresHours?: number, description?: string, userId?: string): Promise<{id, filename, uri, expires_at}>\n" +
+		"  - artifact.read(id: string, userId?: string): Promise<{content: Uint8Array, mime_type, filename}>\n" +
+		"  - artifact.list(userId?: string): Promise<Array<{id, filename, mime_type, ...}>>\n" +
+		"  - artifact.delete(id: string, userId?: string): Promise<{deleted: boolean}>\n"
 
 	executionConstraintsFooter = "- Output: Use 'console.log()' to return data to the user."
 
@@ -57,6 +57,8 @@ const (
 
 	ParamArtifactID            = "artifactId"
 	ParamArtifactIDDescription = "The ID or filename of the artifact to execute."
+	ParamUserID                = "userId"
+	ParamUserIDDescription     = "Optional user ID to scope the artifact lookup."
 
 	PromptUsage            = "how_to_use"
 	PromptUsageDescription = "Instructions on when and how to use the wollmilchsau MCP server effectively."

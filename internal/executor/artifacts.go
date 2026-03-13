@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hmsoft0815/mlcartifact"
+	mlcartifact "github.com/hmsoft0815/mlcartifact/client"
 	v8 "rogchap.com/v8go"
 )
 
@@ -148,6 +148,9 @@ func artifactWriteCallback(iso *v8.Isolate, v8ctx *v8.Context, cli *mlcartifact.
 		if len(args) >= 5 && !args[4].IsUndefined() {
 			opts = append(opts, mlcartifact.WithDescription(args[4].String()))
 		}
+		if len(args) >= 6 && !args[5].IsUndefined() {
+			opts = append(opts, mlcartifact.WithUserID(args[5].String()))
+		}
 
 		res, err := cli.Write(ctx, filename, content, opts...)
 		if err != nil {
@@ -169,7 +172,12 @@ func artifactReadCallback(iso *v8.Isolate, v8ctx *v8.Context, cli *mlcartifact.C
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		res, err := cli.Read(ctx, id)
+		opts := []mlcartifact.ReadOption{}
+		if len(args) >= 2 && !args[1].IsUndefined() {
+			opts = append(opts, mlcartifact.WithReadUserID(args[1].String()))
+		}
+
+		res, err := cli.Read(ctx, id, opts...)
 		if err != nil {
 			return wrapError(iso, v8ctx, "artifact.read failed: "+err.Error())
 		}
@@ -180,10 +188,16 @@ func artifactReadCallback(iso *v8.Isolate, v8ctx *v8.Context, cli *mlcartifact.C
 
 func artifactListCallback(iso *v8.Isolate, v8ctx *v8.Context, cli *mlcartifact.Client) v8.FunctionCallback {
 	return func(info *v8.FunctionCallbackInfo) *v8.Value {
+		args := info.Args()
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		res, err := cli.List(ctx, "")
+		userID := ""
+		if len(args) >= 1 && !args[0].IsUndefined() {
+			userID = args[0].String()
+		}
+
+		res, err := cli.List(ctx, userID)
 		if err != nil {
 			return wrapError(iso, v8ctx, "artifact.list failed: "+err.Error())
 		}
@@ -203,7 +217,12 @@ func artifactDeleteCallback(iso *v8.Isolate, v8ctx *v8.Context, cli *mlcartifact
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		res, err := cli.Delete(ctx, id)
+		opts := []mlcartifact.DeleteOption{}
+		if len(args) >= 2 && !args[1].IsUndefined() {
+			opts = append(opts, mlcartifact.WithDeleteUserID(args[1].String()))
+		}
+
+		res, err := cli.Delete(ctx, id, opts...)
 		if err != nil {
 			return wrapError(iso, v8ctx, "artifact.delete failed: "+err.Error())
 		}
