@@ -65,6 +65,25 @@ test-client: build ## Run test client (stdio MCP integration)
 test-sse: build ## Run SSE integration test via curl/bash
 	./scripts/test_sse.sh
 
+install-tester: ## Install mcp-tester CLI tool
+	go install github.com/hmsoft0815/mlc_mcptester/cmd/mcp-tester@latest
+
+test-mcp: build ## Run automated MCP script tests via mcp-tester
+	@if ! command -v mcp-tester >/dev/null 2>&1; then \
+		echo "📦 mcp-tester not found, installing..."; \
+		$(MAKE) install-tester; \
+	fi
+	@echo "🧪 Running MCP Integration Tests..."
+	mcp-tester test --script tests/basic.mcp -c "$(shell pwd)/build/$(BINARY)"
+	mcp-tester test --script tests/extended.mcp -c "$(shell pwd)/build/$(BINARY)"
+
+inspect: build ## Run mcp-tester quality inspection
+	@if ! command -v mcp-tester >/dev/null 2>&1; then \
+		echo "📦 mcp-tester not found, installing..."; \
+		$(MAKE) install-tester; \
+	fi
+	mcp-tester inspect -c "$(shell pwd)/build/$(BINARY)"
+
 # ##############################################################################
 # # RELEASE & CROSS-COMPILATION (CGO CONSIDERATIONS)
 # ##############################################################################

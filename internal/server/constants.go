@@ -3,7 +3,7 @@ package server
 
 const (
 	ServerName    = "wollmilchsau"
-	ServerVersion = "2.2.1"
+	ServerVersion = "2.2.2"
 	ServerTitle   = "Wollmilchsau – TypeScript Execution Engine"
 
 	// mimeTypeSVG is the shared MIME type constant for inline SVG icons.
