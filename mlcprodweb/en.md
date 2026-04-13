@@ -12,3 +12,40 @@ Executing TypeScript logic within an MCP server usually requires a full Node.js 
 - **Embedded esbuild**: Automatically bundles and transpiles your TypeScript files on the fly, so you don't need a complex build pipeline.
 - **Seamless Go Integration**: Designed to be the scriptable heart of Go-based MCP servers, allowing you to define tool logic in TypeScript while maintaining the robustness of Go for the server transport.
 - **Artifact Support**: Built-in connection to the `mlcartifact` service, allowing your scripts to produce and manage persistent results easily.
+
+## Quick Setup
+
+### Claude Desktop
+Add the following to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "wollmilchsau": {
+      "command": "wollmilchsau",
+      "args": ["-enable-artifacts"]
+    }
+  }
+}
+```
+
+### Gemini-CLI
+Add to your `~/.gemini/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "wollmilchsau": {
+      "command": "wollmilchsau",
+      "args": ["-enable-artifacts"]
+    }
+  }
+}
+```
+
+### MCP-Tester
+Add a new profile:
+
+```bash
+mcp-tester profile add wollmilchsau -c "wollmilchsau --enable-artifacts"
+```
