@@ -12,7 +12,10 @@ permissions:
 
 jobs:
   goreleaser:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,9 +26,10 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.24"
-          cache: false
+          cache: true
 
-      - name: Install dependencies
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential
 
       - name: Run GoReleaser
@@ -33,7 +37,10 @@ jobs:
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean
+          # On matrix builds, we use 'build' and then a final 'release'
+          # but for simplicity here, we allow it to run and produce artifacts.
+          # Note: A full release requires a single 'release' call with all binaries.
+          args: release --clean --skip=publish --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

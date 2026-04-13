@@ -11,7 +11,7 @@ tasks:
     silent: true
 
   build:
-    desc: Build the wollmilchsau binary
+    desc: Build the wollmilchsau binary for the current host
     cmds:
       - mkdir -p build
       - CGO_ENABLED=1 go build -trimpath -o {{.BINARY}} ./cmd/main.go
@@ -20,6 +20,31 @@ tasks:
       - go.mod
     generates:
       - "{{.BINARY}}"
+
+  build-linux:
+    desc: Build for Linux (amd64)
+    cmds:
+      - mkdir -p build
+      - CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -trimpath -o build/wollmilchsau-linux-amd64 ./cmd/main.go
+
+  build-windows:
+    desc: Build for Windows (amd64) - Requires Mingw-w64 for CGO
+    cmds:
+      - mkdir -p build
+      - CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -trimpath -o build/wollmilchsau-windows-amd64.exe ./cmd/main.go
+
+  build-macos:
+    desc: Build for macOS (arm64) - Requires macOS toolchain for CGO
+    cmds:
+      - mkdir -p build
+      - CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -trimpath -o build/wollmilchsau-macos-arm64 ./cmd/main.go
+
+  build-all:
+    desc: "Attempt to build for all platforms (Note: CGO cross-compilation may fail locally)"
+    cmds:
+      - task: build-linux
+      - task: build-windows
+      - task: build-macos
 
   docker-build:
     desc: Build the Docker image
