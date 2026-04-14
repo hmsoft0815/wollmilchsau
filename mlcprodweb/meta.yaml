@@ -2,7 +2,7 @@ id: "wollmilchsau"
 name: "Wollmilchsau"
 version: "2.3.0"
 status: "stable"
-category: "Infrastructure"
+category: "MCP Tools"
 license: "MIT"
 platforms: [Windows, macOS, Linux]
 slogan_en: "Stop making the LLM think — give it a V8 sandbox and let it write code."
