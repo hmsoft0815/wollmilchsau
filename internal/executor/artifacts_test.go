@@ -48,6 +48,14 @@ func (m *mockArtifactService) Delete(ctx context.Context, req *connect.Request[p
 	}), nil
 }
 
+func (m *mockArtifactService) Find(ctx context.Context, req *connect.Request[pb.FindRequest]) (*connect.Response[pb.ListResponse], error) {
+	return connect.NewResponse(&pb.ListResponse{}), nil
+}
+
+func (m *mockArtifactService) Patch(ctx context.Context, req *connect.Request[pb.PatchRequest]) (*connect.Response[pb.PatchResponse], error) {
+	return connect.NewResponse(&pb.PatchResponse{}), nil
+}
+
 func TestArtifactBridge(t *testing.T) {
 	mockSvc := &mockArtifactService{
 		readData: []byte("hello artifact"),
