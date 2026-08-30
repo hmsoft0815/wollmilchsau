@@ -82,6 +82,8 @@ Add this to your system prompt:
   ```
   *(The LLM runs the code in the sandbox, inspects the real `console.log` output, and returns guaranteed verified, working code to the user).*
 
+> 📖 **More Examples (Log parsing with Lodash, Geo-Spatial Haversine distance, JWT verification):** See [docs/EXAMPLES.md](docs/EXAMPLES.md).
+
 ---
 
 ## How It Works

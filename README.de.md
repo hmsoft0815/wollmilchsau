@@ -82,6 +82,8 @@ Füge das deinem System-Prompt hinzu:
   ```
   *(Das LLM führt den Code selbst aus, sieht das echte `console.log`-Ergebnis und liefert dem Nutzer garantiert getesteten, funktionierenden Code).*
 
+> 📖 **Weitere Praxisbeispiele (Log-Parsing mit Lodash, Geo-Distanzen / Haversine, JWT-Validierung):** Siehe [docs/EXAMPLES.de.md](docs/EXAMPLES.de.md).
+
 ---
 
 ## Wie es funktioniert
