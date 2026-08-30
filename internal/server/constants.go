@@ -74,7 +74,7 @@ const (
 		"- execute_script: For single file execution.\n" +
 		"- execute_project: For multi-file project execution.\n" +
 		"- check_syntax: For pure syntax validation without execution.\n" +
-		"- list_js_packages: Lists bundled JS packages (crypto-js, lodash(+@types/lodash), zod) available for require/import in multi-file projects.\n" +
+		"- list_js_packages: Lists bundled JS packages (crypto-js, lodash(+@types/lodash), mathjs, zod) available for require/import in scripts and multi-file projects.\n" +
 		"\n\nWhen to use wollmilchsau:\n" +
 		"- Mathematical Complexity: For any calculation beyond basic arithmetic or involving many steps.\n" +
 		"- Algorithm Verification: To verify logic, sorting, searching, or any procedural task.\n" +
