@@ -45,6 +45,10 @@ const (
 		"Returns success and any syntax errors found. " +
 		"Use this tool when you only need to validate the syntax of the code without running it."
 
+	ToolListJSPackages = "list_js_packages"
+	listJSPKGDesc = "Lists all bundled JavaScript/Node.js packages available for import in execute_project scripts. " +
+		"Returns package names, versions, and descriptions so agents know which modules they can require() or ES-import."
+
 	ParamCode = "code"
 
 	ParamCodeDescription       = "The TypeScript/JavaScript code to execute."
@@ -70,6 +74,7 @@ const (
 		"- execute_script: For single file execution.\n" +
 		"- execute_project: For multi-file project execution.\n" +
 		"- check_syntax: For pure syntax validation without execution.\n" +
+		"- list_js_packages: Lists bundled JS packages (crypto-js, lodash(+@types/lodash), zod) available for require/import in multi-file projects.\n" +
 		"\n\nWhen to use wollmilchsau:\n" +
 		"- Mathematical Complexity: For any calculation beyond basic arithmetic or involving many steps.\n" +
 		"- Algorithm Verification: To verify logic, sorting, searching, or any procedural task.\n" +
@@ -81,6 +86,18 @@ const (
 		"2. Offload Thinking: Instead of writing a long explanation of how to solve a math problem, write code that DOES it and show the result.\n"
 	promptUsageTextArtifacts = "3. Use Artifacts: For repetitive tasks or long-term data storage, use the global 'artifact' object.\n"
 )
+
+// DefaultBundledDeps returns the list of packages bundled by default when no
+// -bundled-js-deps flag is provided. It mirrors npminstall.DefaultPackages.
+func DefaultBundledDeps() []string {
+	return []string{
+		"crypto-js",
+		"lodash",
+		"@types/lodash",
+		"mathjs",
+		"zod",
+	}
+}
 
 func GetExecutionConstraints(enableArtifacts bool) string {
 	res := executionConstraintsBase

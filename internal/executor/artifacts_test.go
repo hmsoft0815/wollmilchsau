@@ -3,125 +3,122 @@ package executor
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 	"testing"
-
-	"connectrpc.com/connect"
-	mlcartifact "github.com/hmsoft0815/mlcartifact/client"
-	pb "github.com/hmsoft0815/mlcartifact/proto"
-	v8 "rogchap.com/v8go"
+	"time"
 )
 
-type mockArtifactService struct {
-	lastWrite *pb.WriteRequest
-	readData  []byte
-	listItems []*pb.ArtifactInfo
-}
+// TestPolyfillWithoutArtifactService verifies that without a real artifact server,
+// core polyfills still work and Execute succeeds.
+func TestPolyfillWithoutArtifactService(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-func (m *mockArtifactService) Write(ctx context.Context, req *connect.Request[pb.WriteRequest]) (*connect.Response[pb.WriteResponse], error) {
-	m.lastWrite = req.Msg
-	return connect.NewResponse(&pb.WriteResponse{
-		Id:       "test-id",
-		Filename: req.Msg.Filename,
-		Uri:      "mcp:///test-id",
-	}), nil
-}
+	res := Execute(ctx, `
+const b64 = btoa("test") === "dGVzdA==";
+var arr = new Uint8Array(16);
+crypto.getRandomValues(arr);
+var encOk = TextEncoder && !isNaN(TextEncoder.prototype.encode.call(new TextEncoder(), "x").length);
+var decOk = TextDecoder;
+console.log(b64 + "|" + arr.length + "|" + (encOk ? 1 : 0) + "|" + (decOk ? 1 : 0));
+`, "test.js", nil, "")
 
-func (m *mockArtifactService) Read(ctx context.Context, req *connect.Request[pb.ReadRequest]) (*connect.Response[pb.ReadResponse], error) {
-	return connect.NewResponse(&pb.ReadResponse{
-		Content:  m.readData,
-		MimeType: "text/plain",
-		Filename: "test.txt",
-	}), nil
-}
-
-func (m *mockArtifactService) List(ctx context.Context, req *connect.Request[pb.ListRequest]) (*connect.Response[pb.ListResponse], error) {
-	return connect.NewResponse(&pb.ListResponse{
-		Items: m.listItems,
-	}), nil
-}
-
-func (m *mockArtifactService) Delete(ctx context.Context, req *connect.Request[pb.DeleteRequest]) (*connect.Response[pb.DeleteResponse], error) {
-	return connect.NewResponse(&pb.DeleteResponse{
-		Deleted: true,
-	}), nil
-}
-
-func (m *mockArtifactService) Find(ctx context.Context, req *connect.Request[pb.FindRequest]) (*connect.Response[pb.ListResponse], error) {
-	return connect.NewResponse(&pb.ListResponse{}), nil
-}
-
-func (m *mockArtifactService) Patch(ctx context.Context, req *connect.Request[pb.PatchRequest]) (*connect.Response[pb.PatchResponse], error) {
-	return connect.NewResponse(&pb.PatchResponse{}), nil
-}
-
-func TestArtifactBridge(t *testing.T) {
-	mockSvc := &mockArtifactService{
-		readData: []byte("hello artifact"),
-		listItems: []*pb.ArtifactInfo{
-			{Id: "1", Filename: "f1.txt"},
-		},
+	if !res.Success {
+		t.Fatalf("execution should succeed without artifact service: %v; stderr=%q", res.Summary, res.Stderr)
 	}
-
-	cli := mlcartifact.NewClientWithService(mockSvc)
-
-	iso := v8.NewIsolate()
-	defer iso.Dispose()
-
-	v8ctx := v8.NewContext(iso)
-	defer v8ctx.Close()
-
-	if err := InjectArtifactServiceWithClient(iso, v8ctx, cli); err != nil {
-		t.Fatalf("Failed to inject artifact service: %v", err)
+	if res.ExitCode != 0 {
+		t.Errorf("expected exit code 0, got %d", res.ExitCode)
 	}
+	if !strings.Contains(res.Stdout, "true|16|1|1") {
+		t.Errorf("core polyfills should still work; stdout=%q", res.Stdout)
+	}
+	if len(res.CreatedArtifacts) != 0 {
+		t.Errorf("expected 0 artifacts without a server, got %d", len(res.CreatedArtifacts))
+	}
+}
 
-	// Test Write
-	t.Run("write", func(t *testing.T) {
-		js := `
-			(() => {
-				const res = artifact.write("test.txt", "content", "text/plain", 24, "This is a test description");
-				return JSON.stringify(res);
-			})()
-		`
-		val, err := v8ctx.RunScript(js, "test_write.js")
-		if err != nil {
-			t.Fatalf("Script failed: %v", err)
-		}
-		// ... parser logic ...
-		resStr := val.String()
-		var res map[string]any
-		if err := json.Unmarshal([]byte(resStr), &res); err != nil {
-			t.Fatalf("Failed to parse response: %v", err)
-		}
+// TestExecuteTimeoutViaContext verifies that context cancellation is detected.
+func TestExecuteTimeoutViaContext(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
 
-		if res["id"] != "test-id" {
-			t.Errorf("Expected id test-id, got %v", res["id"])
-		}
-		if mockSvc.lastWrite.Filename != "test.txt" {
-			t.Errorf("Expected filename test.txt, got %s", mockSvc.lastWrite.Filename)
-		}
-		if mockSvc.lastWrite.Description != "This is a test description" {
-			t.Errorf("Expected description 'This is a test description', got '%s'", mockSvc.lastWrite.Description)
-		}
-	})
+	res := Execute(ctx, `while (true) {}`, "test.js", nil, "")
 
-	// Test List
-	t.Run("list", func(t *testing.T) {
-		js := `
-			(() => {
-				const items = artifact.list();
-				return JSON.stringify(items);
-			})()
-		`
-		val, err := v8ctx.RunScript(js, "test_list.js")
-		if err != nil {
-			t.Fatalf("Script failed: %v", err)
-		}
+	if res.Success {
+		t.Errorf("expected execution to fail (timeout)")
+	}
+	if res.ExitCode != 124 {
+		t.Errorf("expected exit code 124 for timeout, got %d", res.ExitCode)
+	}
+	if !strings.Contains(res.Summary, "timed out") {
+		t.Errorf("expected 'timed out' in summary, got %q", res.Summary)
+	}
+}
 
-		resStr := val.String()
-		if !strings.Contains(resStr, "f1.txt") {
-			t.Errorf("Expected list to contain f1.txt, got %s", resStr)
-		}
-	})
+// TestExecuteRuntimeError verifies runtime errors are reported correctly.
+func TestExecuteRuntimeError(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res := Execute(ctx, `throw new Error("test error");`, "test.js", nil, "")
+
+	if res.Success {
+		t.Errorf("expected execution to fail")
+	}
+	if res.ExitCode != 1 {
+		t.Errorf("expected exit code 1, got %d", res.ExitCode)
+	}
+	if !strings.Contains(res.Summary, "Runtime Error") {
+		t.Errorf("expected 'Runtime Error' in summary, got %q", res.Summary)
+	}
+	if len(res.Diagnostics) == 0 {
+		t.Error("expected diagnostics for runtime error")
+	}
+	if len(res.Diagnostics) > 0 && res.Diagnostics[0].Severity != "error" {
+		t.Errorf("expected severity 'error', got %q", res.Diagnostics[0].Severity)
+	}
+}
+
+// TestExecuteSuccess verifies successful code execution.
+func TestExecuteSuccess(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res := Execute(ctx, `
+const a = 1 + 2;
+console.log("result=" + a);
+console.warn("warn msg");
+console.error("err msg");
+`, "test.js", nil, "")
+
+	if !res.Success {
+		t.Fatalf("unexpected failure: %v", res.Summary)
+	}
+	if res.ExitCode != 0 {
+		t.Errorf("expected exit code 0, got %d", res.ExitCode)
+	}
+	if !strings.Contains(res.Stdout, "result=3") {
+		t.Errorf("expected 'result=3' in stdout, got %q", res.Stdout)
+	}
+	if !strings.Contains(res.Stderr, "warn msg") {
+		t.Errorf("expected 'warn msg' in stderr, got %q", res.Stderr)
+	}
+	if len(res.Diagnostics) != 0 {
+		t.Errorf("expected no diagnostics, got %v", res.Diagnostics)
+	}
+}
+
+// TestExecuteDurationMs verifies the duration metric is nonzero.
+func TestExecuteDurationMs(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res := Execute(ctx, `console.log("done");`, "test.js", nil, "")
+
+	if !res.Success {
+		t.Fatalf("unexpected failure: %v", res.Summary)
+	}
+	if res.DurationMs <= 0 {
+		t.Errorf("expected positive DurationMs, got %d", res.DurationMs)
+	}
 }

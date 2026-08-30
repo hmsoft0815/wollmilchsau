@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 
 	mcpserver "github.com/hmsoft0815/wollmilchsau/internal/server"
 	"github.com/mark3labs/mcp-go/server"
@@ -22,6 +23,7 @@ func main() {
 	logDirFlag := flag.String("log-dir", "", "Directory to store complete request/response ZIP archives (optional)")
 	enableArtifactsFlag := flag.Bool("enable-artifacts", false, "Enable the artifact service integration (artifact global object and execute_artifact tool)")
 	artifactAddrFlag := flag.String("artifact-addr", "", "Address of the mlcartifact gRPC server (optional, default uses local or env)")
+	bundledDepsFlag := flag.String("bundled-js-deps", strings.Join(mcpserver.DefaultBundledDeps(), ","), "Comma-separated npm packages to bundle into this server's sandbox (e.g. 'mathjs@12,uuid'). Default: crypto-js,lodash,@types/lodash,zod")
 	flag.Parse()
 
 	if *versionFlag {
@@ -32,13 +34,15 @@ func main() {
 	}
 
 	if *dumpFlag {
-		tools := mcpserver.GetTools(*enableArtifactsFlag)
+		pkgs := parseBundledDeps(*bundledDepsFlag)
+		tools := mcpserver.GetTools(*enableArtifactsFlag, pkgs)
 		b, _ := json.MarshalIndent(tools, "", "  ")
 		fmt.Println(string(b))
 		return
 	}
 
-	ws := mcpserver.New(*logDirFlag, *enableArtifactsFlag, *artifactAddrFlag)
+	pkgs := parseBundledDeps(*bundledDepsFlag)
+	ws := mcpserver.New(*logDirFlag, *enableArtifactsFlag, *artifactAddrFlag, pkgs)
 
 	if *addrFlag != "" {
 		// SSE Mode
@@ -67,4 +71,16 @@ func main() {
 			os.Exit(1)
 		}
 	}
+}
+
+// parseBundledDeps splits the CLI flag and returns packages as-is.
+func parseBundledDeps(raw string) []string {
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	for i, p := range parts {
+		parts[i] = strings.TrimSpace(p)
+	}
+	return parts
 }

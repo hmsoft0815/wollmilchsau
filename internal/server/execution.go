@@ -21,6 +21,9 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 		plan.TimeoutMs = 10_000
 	}
 
+	// Inject bundled JS deps if configured.
+	s.injectBundledDeps(plan)
+
 	if err := parser.ValidatePlan(plan); err != nil {
 		res := mcp.NewToolResultText("validation error: " + err.Error())
 		res.IsError = true

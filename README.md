@@ -109,6 +109,8 @@ docker run -p 8000:8000 wollmilchsau
 | `-artifact-addr` | gRPC address of the `mlcartifact` server (e.g. `localhost:50051`). Optional, uses defaults if empty. |
 | `-dump` | Dumps the MCP tool schema to stdout and exits. |
 | `-version` | Shows version information and exits. |
+| `-bundled-js-deps` | Comma-separated npm packages to bundle into the V8 sandbox (e.g. `crypto-js,lodash,mathjs,zod`). Default: all standard packages. **Packages are installed only at server startup — no runtime installation possible.** |
+
 
 ---
 
@@ -145,7 +147,12 @@ Execute a multi-file TypeScript project.
 - `entryPoint` — Entry file (e.g. `main.ts`)
 - `timeoutMs` — Optional
 
+### `list_js_packages`
+
+Returns all bundled JS packages with name, version, type, and description. **Packages are installed only at server startup — no runtime installation possible.**
+
 ### `check_syntax`
+
 Validate TypeScript syntax without executing. Returns diagnostics with source positions.
 
 ---
@@ -157,9 +164,46 @@ The execution environment is strictly isolated for safety:
 - **No network:** `fetch`, `XMLHttpRequest` disabled
 - **No timers:** `setTimeout`, `setInterval` disabled
 - **No Node.js APIs:** No `fs`, `os`, `process`, DOM
+- **No internet access in sandbox** (no `npm install`, no package downloads at runtime)
 - **Memory limit:** 128MB heap
 - **CPU limit:** Configurable timeout (default 10s)
 - **Pure logic:** Ideal for computation, transformation, parsing
+
+---
+
+## Bundled JS Packages
+
+wollmilchsau can inject Node.js packages into the V8 sandbox, available to agents via `require()` or ES-module imports. Packages are installed at server startup only — **no runtime installation possible** (sandboxing).
+
+### Default Packages
+
+| Package | Description |
+|---|---|
+| `crypto-js` | Cryptographic functions (SHA-256, AES, MD5, HMAC) |
+| `lodash` | Utility library for arrays, numbers, objects, strings |
+| `@types/lodash` | TypeScript type definitions for lodash |
+| `mathjs` | Mathematics engine with matrices, fractions, units |
+| `zod` | TypeScript-first schema validation with type inference |
+
+### Usage Example
+
+```bash
+# Install additional packages at startup
+./build/wollmilchsau -bundled-js-deps=crypto-js,lodash,mathjs,zod
+
+# Or list available packages (agent-facing)
+# Use the `list_js_packages` MCP tool to query all bundled packages
+```
+
+### Agent Instructions
+
+Agents can call the **`list_js_packages`** MCP tool in sandbox context to discover all available packages (name, version, type, description). Always check before writing code that depends on a package.
+
+### Important Constraints
+
+- **Install at startup only:** No `npm install` or internet access during sandbox execution.
+- **CJS vs ESM:** Packages are served as CommonJS. ES-module imports (`import x from 'y'`) may cause issues — prefer `require('y')`.
+- **Scoped packages** (e.g., `@types/*`) are correctly installed and resolved by esbuild.
 
 ---
 

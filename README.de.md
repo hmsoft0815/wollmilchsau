@@ -1,6 +1,6 @@
 # wollmilchsau — Lass das LLM rechnen statt denken.
 
-> **Der kluge Ansatz:** Wenn ein Problem mit einem kleinen Programm lösbar ist — lass das LLM keinen langen Denkprozess durchlaufen. Gib ihm eine Sandbox, lass es eine TypeScript-Lösung schreiben, und erhalte in Millisekunden ein deterministisches Ergebnis.
+> **Der kluge Ansatz:** Wenn ein Problem mit einem kleinen Programm lösbar ist — lass das LLM keinen langen Denkprozess durchlaufen. Gib ihm eine Sandbox, lass es eine TypeScript-Lösung schreiben und erhalte in Millisekunden ein deterministisches Ergebnis.
 
 Copyright (c) 2026 Michael Lechner. Lizenziert unter der MIT-Lizenz.
 
@@ -10,7 +10,7 @@ Copyright (c) 2026 Michael Lechner. Lizenziert unter der MIT-Lizenz.
 
 ## Das Problem: LLMs verschwenden Zeit mit "Denken"
 
-LLMs verbringen oft Dutzende von Tokens — und wertvolle Reasoning-Zeit — damit, Probleme zu durchdenken, die ein einfaches Programm in unter einer Millisekunde lösen könnte:
+LLMs verbringen oft Dutzende vonTokens — und wertvolle Reasoning-Zeit — damit, Probleme zu durchdenken, die ein einfaches Programm in unter einer Millisekunde lösen könnte:
 
 - Daten parsen und transformieren
 - Komplexe Berechnungen oder Aggregationen
@@ -37,16 +37,16 @@ Füge das deinem System-Prompt hinzu:
 
 ## Features
 
-| Feature | Beschreibung |
+|| Feature | Beschreibung ||
 |---|---|
-| 🔐 **Sandboxed V8** | Kein Netzwerk, kein Dateisystem, keine Node.js APIs |
-| ⚡ **In-Process esbuild** | TypeScript-Bundling in Mikrosekunden, kein Subprocess |
-| 🗺️ **Source Maps** | Fehler zeigen auf die exakte TypeScript-Zeile |
-| 🖼️ **Tool-Icons** | Visuelle Darstellung in MCP-kompatiblen Clients |
-| 📦 **Artefakt-Integration** | Automatisierte Speicherung großer Ausgaben via `openArtifact()` |
-| 📊 **Strukturierte Ausgabe** | JSON-Schema basierte Ergebnisse für zuverlässiges Tool-Parsing |
-| 🗂️ **ZIP Request Logging** | Vollständiger Audit-Trail jeder LLM-Codeausführung |
-| 🔌 **stdio + SSE** | Lokal (Claude Desktop) und remote nutzbar |
+|| 🔐 **Sandboxed V8** | Kein Netzwerk, kein Dateisystem, keine Node.js APIs |
+|| ⚡ **In-Process esbuild** | TypeScript-Bundling in Mikrosekunden, kein Subprocess |
+|| 🗺️ **Source Maps** | Fehler zeigen auf die exakte TypeScript-Zeile |
+|| 🖼️ **Tool-Icons** | Visuelle Darstellung in MCP-kompatiblen Clients |
+|| 📦 **Artefakt-Integration** | Automatisierte Speicherung großer Ausgaben via `openArtifact()` |
+|| 📊 **Strukturierte Ausgabe** | JSON-Schema basierte Ergebnisse für zuverlässiges Tool-Parsing |
+|| 🗂️ **ZIP Request Logging** | Vollständiger Audit-Trail jeder LLM-Codeausführung |
+|| 🔌 **stdio + SSE** | Lokal (Claude Desktop) und remote nutzbar |
 
 ---
 
@@ -94,6 +94,9 @@ docker run -p 8000:8000 wollmilchsau
 # Artefakt-Service aktivieren (erforderlich für artifact.* und openArtifact())
 ./build/wollmilchsau -enable-artifacts -artifact-addr localhost:50051
 
+# mit npm-Paketen in der Sandbox
+./build/wollmilchsau -bundled-js-deps=crypto-js,lodash,mathjs,zod
+
 # Version und Tool-Schema anzeigen
 ./build/wollmilchsau -version
 ./build/wollmilchsau -dump
@@ -101,14 +104,47 @@ docker run -p 8000:8000 wollmilchsau
 
 #### Kommandozeilen-Flags
 
-| Flag | Beschreibung |
+|| Flag | Beschreibung ||
 |---|---|
-| `-addr` | Listen-Adresse für SSE (z.B. `:8080`). Falls leer, wird stdio verwendet. |
-| `-log-dir` | Verzeichnis zur Speicherung vollständiger Request/Response ZIP-Archive (optional). |
-| `-enable-artifacts` | **Erforderlich**, um die Artefakt-Integration zu aktivieren (`artifact` Objekt, `wollmilchsau.openArtifact` und das `execute_artifact` Tool). |
-| `-artifact-addr` | gRPC-Adresse des `mlcartifact` Servers (z.B. `localhost:50051`). Optional, nutzt Standardwerte falls leer. |
-| `-dump` | Gibt das MCP Tool-Schema auf stdout aus und beendet das Programm. |
-| `-version` | Zeigt Versionsinformationen an und beendet das Programm. |
+|| `-addr` | Listen-Adresse für SSE (z.B. `:8080`). Falls leer, wird stdio verwendet. |
+|| `-log-dir` | Verzeichnis zur Speicherung vollständiger Request/Response ZIP-Archive (optional). |
+|| `-enable-artifacts` | **Erforderlich**, um die Artefakt-Integration zu aktivieren (`artifact` Objekt, `wollmilchsau.openArtifact` und das `execute_artifact` Tool). |
+|| `-artifact-addr` | gRPC-Adresse des `mlcartifact` Servers (z.B. `localhost:50051`). Optional, nutzt Standardwerte falls leer. |
+|| `-dump` | Gibt das MCP Tool-Schema auf stdout aus und beendet das Programm. |
+|| `-bundled-js-deps` | Komma-getrennte npm-Pakete für die Sandbox (z.B. `crypto-js,lodash,mathjs,zod`). Default: alle Standardpakete. **Installation nur beim Serverstart — keine runtime-Installation möglich (Sandboxing).** |
+|| `-version` | Zeigt Versionsinformationen an und beendet das Programm. |
+
+---
+
+## Bundled JS Packages (npm-Pakete für die Sandbox)
+
+wollmilchsau kann Node.js-Pakete in die V8-Sandbox injizieren, damit LLM-Agenten sie via `require()` oder ES-Module-Imports nutzen können. Die Pakete werden beim Serverstart installiert — **keine Nachinstallation zur Laufzeit möglich** (Sandboxing).
+
+### Default-Pakete
+
+| Paket | Beschreibung |
+|---|---|
+| `crypto-js` | Cryptographic functions (SHA-256, AES, MD5, HMAC) |
+| `lodash` | Utilities für Arrays, Numbers, Objects, Strings |
+| `@types/lodash` | TypeScript Type Definitions für lodash |
+| `mathjs` | Mathematics engine mit Matrices, Fractions, Units, Expressions |
+
+### Eigene Pakete hinzufügen
+
+```bash
+./build/wollmilchsau -bundled-js-deps=crypto-js,lodash,mathjs,zod
+```
+
+### Verfügbare Pakete abfragen
+
+Agenten können das **list_js_packages** MCP-Tool im Sandbox-Kontext nutzen, um alle verfügbaren Pakete (Name, Version, Typ, Beschreibung) zu erhalten.
+
+### Wichtige Einschränkungen
+
+- **Installation nur beim Serverstart:** Kein `npm install` oder Internet-Zugriff während der Sandbox-Ausführung möglich.
+- **CJS vs ESM:** Pakete werden als CommonJS bereitgestellt. ES-Module-Imports (`import x from 'y'`) können je nach Modultyp Probleme machen — verwende im Zweifel `require('y')`.
+- **Scoped Packages** (z.B. `@types/*`) werden korrekt installiert und von esbuild gefunden.
+- Die Installation kann mehrere Sekunden dauern. Agenten sollten die Pakete vor der Nutzung abfragen.
 
 ---
 
@@ -148,6 +184,9 @@ Führt ein Multi-File-TypeScript-Projekt aus.
 ### `check_syntax`
 Validiert TypeScript-Syntax ohne Ausführung. Gibt Diagnosen mit Quelldatei-Positionen zurück.
 
+### `list_js_packages`
+Gibt eine Liste aller eingebundenen bundled JS-Pakete zurück (Name, Version, Typ, Beschreibung). **Hinweis:** Pakete werden ausschließlich beim Serverstart installiert — keine runtime-Installation.
+
 ---
 
 ## Sandbox-Einschränkungen
@@ -157,6 +196,7 @@ Die Ausführungsumgebung ist streng isoliert:
 - **Kein Netzwerk:** `fetch`, `XMLHttpRequest` deaktiviert
 - **Keine Timer:** `setTimeout`, `setInterval` deaktiviert
 - **Keine Node.js APIs:** Kein `fs`, `os`, `process`, DOM
+- **Kein Internet-Zugriff im Sandbox-Kontext** (kein `npm install`, kein Paketdownload zur Laufzeit)
 - **Speicher-Limit:** 128MB Heap
 - **CPU-Limit:** Konfigurierbarer Timeout (Standard 10s)
 - **Reine Logik:** Ideal für Berechnungen, Transformationen, Parsing
@@ -185,24 +225,15 @@ Bei Verwendung von `openArtifact()` fügt **wollmilchsau** automatisch einen MCP
 
 ## Stack
 
-| Komponente | Library | Zweck |
+|| Komponente | Library | Zweck ||
 |---|---|---|
-| MCP-Protokoll | `mark3labs/mcp-go` | JSON-RPC 2.0 |
-| TS-Bundling | `evanw/esbuild` | Schnelle In-Process-Transpilierung |
-| JS-Ausführung | `rogchap/v8go` | CGo-Bindings zu V8 |
-| Source Maps | Custom | VLQ-Dekodierung & Positionsauflösung |
+|| MCP-Protokoll | `mark3labs/mcp-go` | JSON-RPC 2.0 |
+|| TS-Bundling | `evanw/esbuild` | Schnelle In-Process-Transpilierung |
+|| JS-Ausführung | `rogchap/v8go` | CGo-Bindings zu V8 |
+|| Source Maps | Custom | VLQ-Dekodierung & Positionsauflösung |
 
 ---
 
 ## 📜 Lizenz & Ethische Nutzung
 
 Lizenziert unter der **MIT-Lizenz**.
-
-### 🕊️ Anmerkung des Autors *(nicht bindend)*
-Ich bitte darum, diese Software **nicht** zu verwenden für:
-- Militärische Zwecke oder die Entwicklung von Waffen
-- Aktivitäten zur Unterstützung der militärischen Aggression gegen die Ukraine
-
-Des Weiteren bitte ich **Isensix, Inc.** und dessen Käufer **Dwyer-Omega** ausdrücklich, diese Software nicht zu nutzen.
-
-*Diese Bitte ist ein Appell an die Berufsethik und stellt keine rechtliche Änderung der MIT-Lizenz dar.*

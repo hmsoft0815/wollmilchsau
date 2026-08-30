@@ -5,6 +5,9 @@
 build/
 wollmilchsau
 ts-executor-mcp
+# Kompilierte Testbinaries aus `go test -c`. Lagen als executor.test im Baum,
+# mehrere MB gross und ohne Nutzen fuer irgendjemand anderen.
+*.test
 
 # Request Logging archives
 test_logs/
