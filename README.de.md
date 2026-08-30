@@ -58,6 +58,30 @@ Füge das deinem System-Prompt hinzu:
   }, null, 2));
   ```
 
+### 🧪 Beispiel 3: Code schreiben & sofort mit Testfällen verifizieren (Live-Testing)
+* **Die Frage:** *„Schreib mir eine Funktion, die deutsche IBANs auf gültiges Format und Prüfziffer prüft, und teste sie mit zwei Beispielwerten.“*
+* **Problem beim LLM:** Ein Sprachmodell ohne Sandbox simuliert die Ausführung nur im Kopf (*Mental Tracing*). Bei komplexen Algorithmen (wie BigInt-Modulo-97) übersieht das Modell eigene Bugs und behauptet fälschlicherweise, der Code funktioniere.
+* **Lösung mit `execute_script`:**
+  ```typescript
+  function validateGermanIBAN(iban: string): boolean {
+    const clean = iban.replace(/\s+/g, "").toUpperCase();
+    if (!/^DE\d{20}$/.test(clean)) return false;
+    // DE -> 1314 nach hinten stellen
+    const rearranged = clean.slice(4) + "1314" + clean.slice(2, 4);
+    return BigInt(rearranged) % 97n === 1n;
+  }
+
+  const tests = [
+    "DE02100100100123456789", // gültig
+    "DE00100100100123456789"  // ungültig
+  ];
+
+  tests.forEach(iban => {
+    console.log(`${iban}: ${validateGermanIBAN(iban) ? "GÜLTIG" : "UNGÜLTIG"}`);
+  });
+  ```
+  *(Das LLM führt den Code selbst aus, sieht das echte `console.log`-Ergebnis und liefert dem Nutzer garantiert getesteten, funktionierenden Code).*
+
 ---
 
 ## Wie es funktioniert

@@ -58,6 +58,30 @@ Add this to your system prompt:
   }, null, 2));
   ```
 
+### 🧪 Example 3: Write Code & Verify Immediately with Test Cases (Live Testing)
+* **The Question:** *"Write a function that validates German IBANs (mod-97 check digits) and test it with two sample inputs."*
+* **LLM without sandbox:** Mentally simulates the code execution. On tricky logic (like BigInt modulo 97), the LLM misses subtle bugs and confidently claims broken code works.
+* **With `execute_script`:**
+  ```typescript
+  function validateGermanIBAN(iban: string): boolean {
+    const clean = iban.replace(/\s+/g, "").toUpperCase();
+    if (!/^DE\d{20}$/.test(clean)) return false;
+    // DE -> 1314 to the end
+    const rearranged = clean.slice(4) + "1314" + clean.slice(2, 4);
+    return BigInt(rearranged) % 97n === 1n;
+  }
+
+  const tests = [
+    "DE02100100100123456789", // valid
+    "DE00100100100123456789"  // invalid
+  ];
+
+  tests.forEach(iban => {
+    console.log(`${iban}: ${validateGermanIBAN(iban) ? "VALID" : "INVALID"}`);
+  });
+  ```
+  *(The LLM runs the code in the sandbox, inspects the real `console.log` output, and returns guaranteed verified, working code to the user).*
+
 ---
 
 ## How It Works
