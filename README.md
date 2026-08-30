@@ -231,7 +231,7 @@ When using `openArtifact()`, **wollmilchsau** automatically adds an MCP `resourc
 
 | Component | Library | Purpose |
 |---|---|---|
-| MCP Protocol | `mark3labs/mcp-go` | JSON-RPC 2.0 |
+| MCP Protocol | `modelcontextprotocol/go-sdk` | Official Go MCP SDK |
 | TS Bundling | `evanw/esbuild` | Fast in-process transpilation |
 | JS Execution | `rogchap/v8go` | CGo bindings to V8 |
 | Source Maps | Custom | VLQ decoding & position resolution |

@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	mcpserver "github.com/hmsoft0815/wollmilchsau/internal/server"
-	"github.com/mark3labs/mcp-go/server"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	v8 "rogchap.com/v8go"
 )
 
@@ -33,40 +33,39 @@ func main() {
 		return
 	}
 
+	pkgs := parseBundledDeps(*bundledDepsFlag)
+
 	if *dumpFlag {
-		pkgs := parseBundledDeps(*bundledDepsFlag)
 		tools := mcpserver.GetTools(*enableArtifactsFlag, pkgs)
 		b, _ := json.MarshalIndent(tools, "", "  ")
 		fmt.Println(string(b))
 		return
 	}
 
-	pkgs := parseBundledDeps(*bundledDepsFlag)
 	ws := mcpserver.New(*logDirFlag, *enableArtifactsFlag, *artifactAddrFlag, pkgs)
 
 	if *addrFlag != "" {
 		// SSE Mode
-		sse := server.NewSSEServer(ws.MCPServer,
-			server.WithBaseURL(fmt.Sprintf("http://localhost%s", *addrFlag)),
-			server.WithSSEContextFunc(func(ctx context.Context, r *http.Request) context.Context {
-				return mcpserver.WithRemoteIP(ctx, r.RemoteAddr)
-			}),
-		)
+		sseHandler := mcp.NewSSEHandler(func(r *http.Request) *mcp.Server {
+			return ws.Server
+		}, nil)
+
+		httpHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := mcpserver.WithRemoteIP(r.Context(), r.RemoteAddr)
+			sseHandler.ServeHTTP(w, r.WithContext(ctx))
+		})
 
 		slog.Info("SSE server started", "addr", *addrFlag, "name", mcpserver.ServerName, "log_dir", *logDirFlag)
-		if err := http.ListenAndServe(*addrFlag, sse); err != nil {
+		if err := http.ListenAndServe(*addrFlag, httpHandler); err != nil {
 			slog.Error("http server failed", "err", err)
 			os.Exit(1)
 		}
 	} else {
 		// Stdio Mode
 		slog.Info("stdio server started", "name", mcpserver.ServerName, "version", mcpserver.ServerVersion, "log_dir", *logDirFlag)
+		ctx := mcpserver.WithRemoteIP(context.Background(), "stdio")
 
-		err := server.ServeStdio(ws.MCPServer, server.WithStdioContextFunc(func(ctx context.Context) context.Context {
-			return mcpserver.WithRemoteIP(ctx, "stdio")
-		}))
-
-		if err != nil {
+		if err := ws.Server.Run(ctx, &mcp.StdioTransport{}); err != nil {
 			slog.Error("fatal error", "err", err)
 			os.Exit(1)
 		}

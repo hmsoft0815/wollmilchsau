@@ -7,42 +7,33 @@ import (
 
 	mlcartifact "github.com/hmsoft0815/mlcartifact/client"
 	"github.com/hmsoft0815/wollmilchsau/internal/bundler"
-	"github.com/hmsoft0815/wollmilchsau/internal/executor"
 	"github.com/hmsoft0815/wollmilchsau/internal/parser"
-	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func (s *WollmilchsauServer) handlePromptUsage(ctx context.Context, req mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+func (s *WollmilchsauServer) handlePromptUsage(_ context.Context, _ *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 	return &mcp.GetPromptResult{
 		Description: "Instructions on when to offload thinking to wollmilchsau",
-		Messages: []mcp.PromptMessage{
+		Messages: []*mcp.PromptMessage{
 			{
-				Role:    "system",
-				Content: mcp.NewTextContent(GetPromptUsageText(s.EnableArtifacts)),
+				Role:    mcp.Role("user"),
+				Content: &mcp.TextContent{Text: GetPromptUsageText(s.EnableArtifacts)},
 			},
 		},
 	}, nil
 }
 
-func (s *WollmilchsauServer) handleCheckSyntax(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	args, _ := req.Params.Arguments.(map[string]any)
-	code, _ := args[ParamCode].(string)
-
+func (s *WollmilchsauServer) handleCheckSyntax(_ context.Context, _ *mcp.CallToolRequest, in CheckSyntaxInput) (*mcp.CallToolResult, *CheckSyntaxResult, error) {
 	plan := &parser.ExecutionPlan{
 		Files: []parser.VirtualFile{
-			{Name: "check.ts", Content: code},
+			{Name: "check.ts", Content: in.Code},
 		},
 		EntryPoint: "check.ts",
 	}
 
-	// We use the bundler just to see if it compiles
 	_, err := bundler.Bundle(plan)
 
-	meta := struct {
-		Success     bool                  `json:"success"`
-		Summary     string                `json:"summary"`
-		Diagnostics []executor.Diagnostic `json:"diagnostics,omitempty"`
-	}{
+	meta := &CheckSyntaxResult{
 		Success: err == nil,
 	}
 
@@ -55,65 +46,45 @@ func (s *WollmilchsauServer) handleCheckSyntax(ctx context.Context, req mcp.Call
 			meta.Summary = "Internal check error: " + err.Error()
 		}
 		return &mcp.CallToolResult{
-			Content:           []mcp.Content{mcp.NewTextContent("### Syntax Check Failed\n" + mustJSON(meta))},
+			Content:           []mcp.Content{&mcp.TextContent{Text: "### Syntax Check Failed\n" + mustJSON(meta)}},
 			StructuredContent: meta,
 			IsError:           true,
-		}, nil
+		}, meta, nil
 	}
 
 	meta.Summary = "Syntax is valid"
 	return &mcp.CallToolResult{
-		Content:           []mcp.Content{mcp.NewTextContent("### Syntax Check Passed\n" + mustJSON(meta))},
+		Content:           []mcp.Content{&mcp.TextContent{Text: "### Syntax Check Passed\n" + mustJSON(meta)}},
 		StructuredContent: meta,
-	}, nil
+	}, meta, nil
 }
 
-func (s *WollmilchsauServer) handleExecuteScript(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	args, _ := req.Params.Arguments.(map[string]any)
-	code, _ := args[ParamCode].(string)
-	timeout, _ := args[ParamTimeoutMs].(float64)
-
+func (s *WollmilchsauServer) handleExecuteScript(ctx context.Context, _ *mcp.CallToolRequest, in ExecuteScriptInput) (*mcp.CallToolResult, *ExecutionResult, error) {
 	plan := &parser.ExecutionPlan{
 		Files: []parser.VirtualFile{
-			{Name: "script.ts", Content: code},
+			{Name: "script.ts", Content: in.Code},
 		},
 		EntryPoint: "script.ts",
-		TimeoutMs:  int(timeout),
+		TimeoutMs:  in.TimeoutMs,
 	}
 
 	return s.runExecution(ctx, plan, ToolExecuteScript)
 }
 
-func (s *WollmilchsauServer) handleExecuteProject(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	args, _ := req.Params.Arguments.(map[string]any)
-	filesRaw, _ := args[ParamFiles].([]any)
-	entryPoint, _ := args[ParamEntryPoint].(string)
-	timeout, _ := args[ParamTimeoutMs].(float64)
-
+func (s *WollmilchsauServer) handleExecuteProject(ctx context.Context, _ *mcp.CallToolRequest, in ExecuteProjectInput) (*mcp.CallToolResult, *ExecutionResult, error) {
 	plan := &parser.ExecutionPlan{
-		EntryPoint: entryPoint,
-		TimeoutMs:  int(timeout),
+		EntryPoint: in.EntryPoint,
+		TimeoutMs:  in.TimeoutMs,
 	}
 
-	for _, f := range filesRaw {
-		fm, ok := f.(map[string]any)
-		if !ok {
-			continue
-		}
-		name, _ := fm["name"].(string)
-		content, _ := fm["content"].(string)
-		plan.Files = append(plan.Files, parser.VirtualFile{Name: name, Content: content})
+	for _, f := range in.Files {
+		plan.Files = append(plan.Files, parser.VirtualFile{Name: f.Name, Content: f.Content})
 	}
 
 	return s.runExecution(ctx, plan, ToolExecuteProject)
 }
 
-func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	args, _ := req.Params.Arguments.(map[string]any)
-	artifactID, _ := args[ParamArtifactID].(string)
-	timeout, _ := args[ParamTimeoutMs].(float64)
-	userID, _ := args[ParamUserID].(string)
-
+func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, _ *mcp.CallToolRequest, in ExecuteArtifactInput) (*mcp.CallToolResult, *ExecutionResult, error) {
 	// 1. Fetch artifact from service
 	var cli *mlcartifact.Client
 	var err error
@@ -123,7 +94,10 @@ func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, req mcp.
 		cli, err = mlcartifact.NewClient()
 	}
 	if err != nil {
-		return mcp.NewToolResultErrorFromErr("Failed to connect to artifact service", err), nil
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: "Failed to connect to artifact service: " + err.Error()}},
+			IsError: true,
+		}, nil, nil
 	}
 	defer func() {
 		if closeErr := cli.Close(); closeErr != nil {
@@ -132,13 +106,16 @@ func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, req mcp.
 	}()
 
 	opts := []mlcartifact.ReadOption{}
-	if userID != "" {
-		opts = append(opts, mlcartifact.WithReadUserID(userID))
+	if in.UserID != "" {
+		opts = append(opts, mlcartifact.WithReadUserID(in.UserID))
 	}
 
-	res, err := cli.Read(ctx, artifactID, opts...)
+	res, err := cli.Read(ctx, in.ArtifactID, opts...)
 	if err != nil {
-		return mcp.NewToolResultErrorFromErr("Failed to read artifact", err), nil
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: "Failed to read artifact: " + err.Error()}},
+			IsError: true,
+		}, nil, nil
 	}
 
 	plan := &parser.ExecutionPlan{
@@ -146,7 +123,7 @@ func (s *WollmilchsauServer) handleExecuteArtifact(ctx context.Context, req mcp.
 			{Name: res.Filename, Content: string(res.Content)},
 		},
 		EntryPoint: res.Filename,
-		TimeoutMs:  int(timeout),
+		TimeoutMs:  in.TimeoutMs,
 	}
 
 	return s.runExecution(ctx, plan, ToolExecuteArtifact)

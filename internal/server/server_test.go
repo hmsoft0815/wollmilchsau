@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/hmsoft0815/wollmilchsau/internal/npminstall"
-	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 func TestGetTools(t *testing.T) {
@@ -50,15 +50,16 @@ func TestGetTools(t *testing.T) {
 
 func TestListJSPackages_Empty(t *testing.T) {
 	s := New("", false, "", nil)
-	var req mcp.CallToolRequest
-	req.Params.Name = ToolListJSPackages
 
-	res, err := s.handleListJSPackages(context.Background(), req)
+	res, out, err := s.handleListJSPackages(context.Background(), nil, ListJSPackagesInput{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	if out != nil {
+		t.Errorf("expected nil out when empty, got %+v", out)
+	}
 
-	txtContent, ok := res.Content[0].(mcp.TextContent)
+	txtContent, ok := res.Content[0].(*mcp.TextContent)
 	if !ok || !strings.Contains(txtContent.Text, "No bundled JS packages are configured") {
 		t.Errorf("unexpected response: %+v", res.Content)
 	}
@@ -94,21 +95,21 @@ func TestListJSPackages_WithPackages(t *testing.T) {
 	s := New("", false, "", nil)
 	s.pkgManager = mgr
 
-	var req mcp.CallToolRequest
-	req.Params.Name = ToolListJSPackages
-
-	res, err := s.handleListJSPackages(context.Background(), req)
+	res, out, err := s.handleListJSPackages(context.Background(), nil, ListJSPackagesInput{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	if out == nil || out.Count != 1 {
+		t.Fatalf("expected count 1 in out, got %+v", out)
+	}
 
-	txtContent, ok := res.Content[0].(mcp.TextContent)
+	txtContent, ok := res.Content[0].(*mcp.TextContent)
 	if !ok || !strings.Contains(txtContent.Text, "lodash") {
 		t.Errorf("expected lodash in output: %+v", res.Content)
 	}
 
 	infos := s.bundledPackageInfos()
-	if len(infos) != 1 || infos[0]["name"] != "lodash" {
+	if len(infos) != 1 || infos[0].Name != "lodash" {
 		t.Errorf("unexpected bundledPackageInfos: %+v", infos)
 	}
 }
@@ -145,26 +146,24 @@ func TestExecuteScript_WithBundledDeps(t *testing.T) {
 	s := New("", false, "", nil)
 	s.pkgManager = mgr
 
-	var req mcp.CallToolRequest
-	req.Params.Name = ToolExecuteScript
-	req.Params.Arguments = map[string]any{
-		ParamCode: `
+	in := ExecuteScriptInput{
+		Code: `
 			const math = require("mymath");
 			console.log("RESULT=" + math.add(20, 22));
 		`,
 	}
 
-	res, err := s.handleExecuteScript(context.Background(), req)
+	res, out, err := s.handleExecuteScript(context.Background(), nil, in)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res.IsError {
-		t.Fatalf("tool execution reported error: %+v", res)
+	if res.IsError || out == nil || !out.Success {
+		t.Fatalf("tool execution reported error: %+v, out=%+v", res, out)
 	}
 
 	foundStdout := false
 	for _, c := range res.Content {
-		if tc, ok := c.(mcp.TextContent); ok {
+		if tc, ok := c.(*mcp.TextContent); ok {
 			if strings.Contains(tc.Text, "RESULT=42") {
 				foundStdout = true
 			}
@@ -207,29 +206,27 @@ func TestExecuteProject_WithBundledDeps(t *testing.T) {
 	s := New("", false, "", nil)
 	s.pkgManager = mgr
 
-	var req mcp.CallToolRequest
-	req.Params.Name = ToolExecuteProject
-	req.Params.Arguments = map[string]any{
-		ParamEntryPoint: "main.ts",
-		ParamFiles: []any{
-			map[string]any{
-				"name":    "main.ts",
-				"content": `import { greet } from "helper"; console.log(greet("Antigravity"));`,
+	in := ExecuteProjectInput{
+		EntryPoint: "main.ts",
+		Files: []ProjectFile{
+			{
+				Name:    "main.ts",
+				Content: `import { greet } from "helper"; console.log(greet("Antigravity"));`,
 			},
 		},
 	}
 
-	res, err := s.handleExecuteProject(context.Background(), req)
+	res, out, err := s.handleExecuteProject(context.Background(), nil, in)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res.IsError {
-		t.Fatalf("tool execution reported error: %+v", res)
+	if res.IsError || out == nil || !out.Success {
+		t.Fatalf("tool execution reported error: %+v, out=%+v", res, out)
 	}
 
 	foundGreeting := false
 	for _, c := range res.Content {
-		if tc, ok := c.(mcp.TextContent); ok && strings.Contains(tc.Text, "Hello Antigravity") {
+		if tc, ok := c.(*mcp.TextContent); ok && strings.Contains(tc.Text, "Hello Antigravity") {
 			foundGreeting = true
 		}
 	}

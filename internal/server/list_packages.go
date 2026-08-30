@@ -6,30 +6,29 @@ import (
 	"log/slog"
 
 	"github.com/hmsoft0815/wollmilchsau/internal/parser"
-	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // handleListJSPackages returns all bundled JS packages with metadata.
-func (s *WollmilchsauServer) handleListJSPackages(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (s *WollmilchsauServer) handleListJSPackages(_ context.Context, _ *mcp.CallToolRequest, _ ListJSPackagesInput) (*mcp.CallToolResult, *ListJSPackagesResult, error) {
 	if s.pkgManager == nil {
-		return mcp.NewToolResultText("No bundled JS packages are configured."), nil
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: "No bundled JS packages are configured."}},
+		}, nil, nil
 	}
 
-	infos := s.pkgManager.PackageInfos()
-	meta := struct {
-		Packages []map[string]any `json:"packages"`
-		Count    int              `json:"count"`
-	}{
+	infos := s.bundledPackageInfos()
+	meta := &ListJSPackagesResult{
 		Packages: infos,
 		Count:    len(infos),
 	}
 
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
-			mcp.NewTextContent("### Bundled JS Packages\n" + mustJSON(meta)),
+			&mcp.TextContent{Text: "### Bundled JS Packages\n" + mustJSON(meta)},
 		},
 		StructuredContent: meta,
-	}, nil
+	}, meta, nil
 }
 
 // injectBundledDeps appends VirtualFiles from the manager's node_modules to

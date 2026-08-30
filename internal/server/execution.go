@@ -13,10 +13,10 @@ import (
 	"github.com/hmsoft0815/wollmilchsau/internal/executor"
 	"github.com/hmsoft0815/wollmilchsau/internal/parser"
 	"github.com/hmsoft0815/wollmilchsau/internal/requestlog"
-	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.ExecutionPlan, toolName string) (*mcp.CallToolResult, error) {
+func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.ExecutionPlan, toolName string) (*mcp.CallToolResult, *ExecutionResult, error) {
 	if plan.TimeoutMs == 0 {
 		plan.TimeoutMs = 10_000
 	}
@@ -25,21 +25,18 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 	s.injectBundledDeps(plan)
 
 	if err := parser.ValidatePlan(plan); err != nil {
-		res := mcp.NewToolResultText("validation error: " + err.Error())
-		res.IsError = true
-		return res, nil
+		res := &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: "validation error: " + err.Error()}},
+			IsError: true,
+		}
+		return res, nil, nil
 	}
 
 	bundle, bundleErr := bundler.Bundle(plan)
 	if bundleErr != nil {
 		if be, ok := bundleErr.(*bundler.BundleError); ok {
 			result := buildFailResult(be)
-			meta := struct {
-				Summary     string                `json:"summary"`
-				Success     bool                  `json:"success"`
-				ExitCode    int                   `json:"exitCode"`
-				Diagnostics []executor.Diagnostic `json:"diagnostics,omitempty"`
-			}{
+			meta := &ExecutionResult{
 				Summary:     result.Summary,
 				Success:     result.Success,
 				ExitCode:    result.ExitCode,
@@ -51,14 +48,16 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 			s.maybeLogRequest(ctx, toolName, plan, result)
 
 			return &mcp.CallToolResult{
-				Content:           []mcp.Content{mcp.NewTextContent("### Build Failure\n" + mustJSON(meta))},
+				Content:           []mcp.Content{&mcp.TextContent{Text: "### Build Failure\n" + mustJSON(meta)}},
 				StructuredContent: meta,
 				IsError:           true,
-			}, nil
+			}, meta, nil
 		}
-		res := mcp.NewToolResultText("bundle error: " + bundleErr.Error())
-		res.IsError = true
-		return res, nil
+		res := &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: "bundle error: " + bundleErr.Error()}},
+			IsError: true,
+		}
+		return res, nil, nil
 	}
 
 	execCtx, cancel := context.WithTimeout(ctx, time.Duration(plan.TimeoutMs)*time.Millisecond)
@@ -77,32 +76,25 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 	}
 
 	contents := []mcp.Content{}
-	meta := struct {
-		Summary     string                `json:"summary"`
-		Success     bool                  `json:"success"`
-		ExitCode    int                   `json:"exitCode"`
-		DurationMs  int64                 `json:"durationMs"`
-		Diagnostics []executor.Diagnostic `json:"diagnostics,omitempty"`
-	}{
+	meta := &ExecutionResult{
 		Summary:     result.Summary,
 		Success:     result.Success,
 		ExitCode:    result.ExitCode,
 		DurationMs:  result.DurationMs,
 		Diagnostics: result.Diagnostics,
 	}
-	contents = append(contents, mcp.NewTextContent("### Status\n"+mustJSON(meta)))
+	contents = append(contents, &mcp.TextContent{Text: "### Status\n" + mustJSON(meta)})
 
 	if strings.TrimSpace(result.Stdout) != "" {
-		contents = append(contents, mcp.NewTextContent("### Standard Output\n```\n"+result.Stdout+"\n```"))
+		contents = append(contents, &mcp.TextContent{Text: "### Standard Output\n```\n" + result.Stdout + "\n```"})
 	}
 	if strings.TrimSpace(result.Stderr) != "" {
-		contents = append(contents, mcp.NewTextContent("### Standard Error\n```\n"+result.Stderr+"\n```"))
+		contents = append(contents, &mcp.TextContent{Text: "### Standard Error\n```\n" + result.Stderr + "\n```"})
 	}
 
 	// Append resource_link items for any artifacts created via wollmilchsau.openArtifact()
 	for _, a := range result.CreatedArtifacts {
-		contents = append(contents, mcp.ResourceLink{
-			Type:     "resource_link",
+		contents = append(contents, &mcp.ResourceLink{
 			URI:      a.URI,
 			Name:     a.Name,
 			MIMEType: a.MimeType,
@@ -118,7 +110,7 @@ func (s *WollmilchsauServer) runExecution(ctx context.Context, plan *parser.Exec
 		Content:           contents,
 		StructuredContent: meta,
 		IsError:           !result.Success && result.ExitCode != 0,
-	}, nil
+	}, meta, nil
 }
 
 func (s *WollmilchsauServer) maybeLogRequest(ctx context.Context, tool string, plan *parser.ExecutionPlan, result *executor.Result) {

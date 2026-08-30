@@ -2,46 +2,39 @@
 package server
 
 import (
-	"context"
-
 	"github.com/hmsoft0815/wollmilchsau/internal/npminstall"
-	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/mark3labs/mcp-go/server"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // WollmilchsauServer wraps the MCP server with additional configuration.
 type WollmilchsauServer struct {
-	MCPServer       *server.MCPServer
+	Server          *mcp.Server
 	LogDir          string
 	EnableArtifacts bool
 	ArtifactAddr    string
 	pkgManager      *npminstall.Manager
+	tools           []*mcp.Tool
 }
 
 // serverIcon is the default icon for the wollmilchsau server.
 var serverIcon = mcp.Icon{
-	Src:      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjQgMTcgMTAgMTEgNCAxIi8+PGxpbmUgeDE9IjEyIiB5MT0iMTkiIHgyPSIyMCIgeTI9IjE5Ii8+PC9zdmc+",
+	Source:   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjQgMTcgMTAgMTEgNCAxIi8+PGxpbmUgeDE9IjEyIiB5MT0iMTkiIHgyPSIyMCIgeTI9IjE5Ii8+PC9zdmc+",
 	MIMEType: mimeTypeSVG,
 }
 
 // New creates a new MCP server wrapper for TypeScript execution.
 func New(logDir string, enableArtifacts bool, artifactAddr string, bundledDeps []string) *WollmilchsauServer {
-	hooks := &server.Hooks{}
-	hooks.AddAfterInitialize(func(_ context.Context, _ any, _ *mcp.InitializeRequest, result *mcp.InitializeResult) {
-		result.ServerInfo.Title = ServerTitle
-		result.ServerInfo.Icons = []mcp.Icon{serverIcon}
-	})
+	impl := &mcp.Implementation{
+		Name:    ServerName,
+		Title:   ServerTitle,
+		Version: ServerVersion,
+		Icons:   []mcp.Icon{serverIcon},
+	}
 
-	s := server.NewMCPServer(
-		ServerName,
-		ServerVersion,
-		server.WithToolCapabilities(true),
-		server.WithPromptCapabilities(true),
-		server.WithHooks(hooks),
-	)
+	s := mcp.NewServer(impl, nil)
 
 	ws := &WollmilchsauServer{
-		MCPServer:       s,
+		Server:          s,
 		LogDir:          logDir,
 		EnableArtifacts: enableArtifacts,
 		ArtifactAddr:    artifactAddr,
@@ -52,18 +45,8 @@ func New(logDir string, enableArtifacts bool, artifactAddr string, bundledDeps [
 		ws.setupBundledDeps(bundledDeps)
 	}
 
-	s.AddTool(toolExecuteScript(enableArtifacts), ws.handleExecuteScript)
-	s.AddTool(toolExecuteProject(enableArtifacts), ws.handleExecuteProject)
-	if enableArtifacts {
-		s.AddTool(toolExecuteArtifact(enableArtifacts), ws.handleExecuteArtifact)
-	}
-	s.AddTool(toolCheckSyntax(), ws.handleCheckSyntax)
-
-	// Always register list_js_packages (tool is always available,
-	// even when no deps are configured — it will say so).
-	s.AddTool(toolListJSPackages(), ws.handleListJSPackages)
-
-	s.AddPrompt(mcp.NewPrompt(PromptUsage, mcp.WithPromptDescription(PromptUsageDescription)), ws.handlePromptUsage)
+	ws.registerTools()
+	ws.registerPrompts()
 
 	return ws
 }
@@ -83,10 +66,31 @@ func (s *WollmilchsauServer) setupBundledDeps(packages []string) {
 }
 
 // bundledPackageInfos returns the list of available JS packages, or nil if
-// none are configured. Intended for JSON serialisation in tool responses.
-func (s *WollmilchsauServer) bundledPackageInfos() []map[string]any {
+// none are configured.
+func (s *WollmilchsauServer) bundledPackageInfos() []PackageInfo {
 	if s.pkgManager == nil {
 		return nil
 	}
-	return s.pkgManager.PackageInfos()
+	rawInfos := s.pkgManager.PackageInfos()
+	infos := make([]PackageInfo, 0, len(rawInfos))
+	for _, raw := range rawInfos {
+		name, _ := raw["name"].(string)
+		ver, _ := raw["version"].(string)
+		typ, _ := raw["type"].(string)
+		main, _ := raw["main"].(string)
+		desc, _ := raw["description"].(string)
+		infos = append(infos, PackageInfo{
+			Name:        name,
+			Version:     ver,
+			Type:        typ,
+			Main:        main,
+			Description: desc,
+		})
+	}
+	return infos
+}
+
+// GetTools returns the definitions of all tools registered on this server.
+func (s *WollmilchsauServer) GetTools() []*mcp.Tool {
+	return s.tools
 }

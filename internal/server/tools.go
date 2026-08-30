@@ -2,106 +2,91 @@
 package server
 
 import (
-	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-// GetTools returns the definitions of all tools registered in this server.
-func GetTools(enableArtifacts bool, bundledDeps []string) []mcp.Tool {
-	tools := []mcp.Tool{
-		toolExecuteScript(enableArtifacts),
-		toolExecuteProject(enableArtifacts),
-		toolCheckSyntax(),
-		toolListJSPackages(),
+func (s *WollmilchsauServer) registerTools() {
+	toolExecScript := &mcp.Tool{
+		Name:        ToolExecuteScript,
+		Description: GetToolExecuteScriptDescription(s.EnableArtifacts),
 	}
-	if enableArtifacts {
-		tools = append(tools, toolExecuteArtifact(enableArtifacts))
-	}
-	return tools
-}
+	mcp.AddTool(s.Server, toolExecScript, s.handleExecuteScript)
+	s.tools = append(s.tools, toolExecScript)
 
-func toolListJSPackages() mcp.Tool {
-	return mcp.NewTool(
-		ToolListJSPackages,
-		mcp.WithDescription(listJSPKGDesc),
-		mcp.WithOutputSchema[[]map[string]any](),
-	)
-}
-
-func toolCheckSyntax() mcp.Tool {
-	return mcp.NewTool(
-		ToolCheckSyntax,
-		mcp.WithDescription(ToolCheckSyntaxDescription),
-		mcp.WithString(ParamCode,
-			mcp.Required(),
-			mcp.Description(ParamCodeDescription),
-		),
-		mcp.WithOutputSchema[CheckSyntaxResult](),
-	)
-}
-
-func toolExecuteScript(enableArtifacts bool) mcp.Tool {
-	return mcp.NewTool(
-		ToolExecuteScript,
-		mcp.WithDescription(GetToolExecuteScriptDescription(enableArtifacts)),
-		mcp.WithString(ParamCode,
-			mcp.Required(),
-			mcp.Description(ParamCodeDescription),
-		),
-		mcp.WithNumber(ParamTimeoutMs,
-			mcp.Description(ParamTimeoutMsDescription),
-		),
-		mcp.WithOutputSchema[ExecutionResult](),
-	)
-}
-
-func toolExecuteProject(enableArtifacts bool) mcp.Tool {
-	tool := mcp.NewTool(
-		ToolExecuteProject,
-		mcp.WithDescription(GetToolExecuteProjectDescription(enableArtifacts)),
-	)
-
-	// Manually add the complex 'files' property since helper functions are limited
-	tool.InputSchema.Properties[ParamFiles] = map[string]any{
-		"type": "array",
-		"items": map[string]any{
+	toolExecProj := &mcp.Tool{
+		Name:        ToolExecuteProject,
+		Description: GetToolExecuteProjectDescription(s.EnableArtifacts),
+		InputSchema: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
-				"name":    map[string]any{"type": "string", "description": "Filename (e.g. main.ts)"},
-				"content": map[string]any{"type": "string", "description": "File content"},
+				"entryPoint": map[string]any{
+					"type":        "string",
+					"description": "The name of the file to start execution from (e.g. 'main.ts').",
+				},
+				"files": map[string]any{
+					"description": "A list of virtual files {name, content} to include in the project.",
+					"anyOf": []map[string]any{
+						{
+							"type": "array",
+							"items": map[string]any{
+								"type": "object",
+								"properties": map[string]any{
+									"name":    map[string]any{"type": "string", "description": "Filename (e.g. main.ts)"},
+									"content": map[string]any{"type": "string", "description": "File content"},
+								},
+								"required": []string{"name", "content"},
+							},
+						},
+						{
+							"type":        "string",
+							"description": "JSON-encoded array of {name, content} objects.",
+						},
+					},
+				},
+				"timeoutMs": map[string]any{
+					"type":        "integer",
+					"description": "Maximum execution time in milliseconds (100 - 30000).",
+				},
 			},
-			"required": []string{"name", "content"},
+			"required": []string{"entryPoint", "files"},
 		},
-		"description": ParamFilesDescription,
 	}
-	tool.InputSchema.Required = append(tool.InputSchema.Required, ParamFiles)
+	mcp.AddTool(s.Server, toolExecProj, s.handleExecuteProject)
+	s.tools = append(s.tools, toolExecProj)
 
-	// Add simpler properties using helpers
-	mcp.WithString(ParamEntryPoint,
-		mcp.Required(),
-		mcp.Description(ParamEntryPointDescription),
-	)(&tool)
+	if s.EnableArtifacts {
+		toolExecArt := &mcp.Tool{
+			Name:        ToolExecuteArtifact,
+			Description: GetToolExecuteArtifactDescription(s.EnableArtifacts),
+		}
+		mcp.AddTool(s.Server, toolExecArt, s.handleExecuteArtifact)
+		s.tools = append(s.tools, toolExecArt)
+	}
 
-	mcp.WithNumber(ParamTimeoutMs,
-		mcp.Description(ParamTimeoutMsDescription),
-	)(&tool)
+	toolChkSyntax := &mcp.Tool{
+		Name:        ToolCheckSyntax,
+		Description: ToolCheckSyntaxDescription,
+	}
+	mcp.AddTool(s.Server, toolChkSyntax, s.handleCheckSyntax)
+	s.tools = append(s.tools, toolChkSyntax)
 
-	return tool
+	toolListDeps := &mcp.Tool{
+		Name:        ToolListJSPackages,
+		Description: listJSPKGDesc,
+	}
+	mcp.AddTool(s.Server, toolListDeps, s.handleListJSPackages)
+	s.tools = append(s.tools, toolListDeps)
 }
 
-func toolExecuteArtifact(enableArtifacts bool) mcp.Tool {
-	return mcp.NewTool(
-		ToolExecuteArtifact,
-		mcp.WithDescription(GetToolExecuteArtifactDescription(enableArtifacts)),
-		mcp.WithString(ParamArtifactID,
-			mcp.Required(),
-			mcp.Description(ParamArtifactIDDescription),
-		),
-		mcp.WithString(ParamUserID,
-			mcp.Description(ParamUserIDDescription),
-		),
-		mcp.WithNumber(ParamTimeoutMs,
-			mcp.Description(ParamTimeoutMsDescription),
-		),
-		mcp.WithOutputSchema[ExecutionResult](),
-	)
+func (s *WollmilchsauServer) registerPrompts() {
+	s.Server.AddPrompt(&mcp.Prompt{
+		Name:        PromptUsage,
+		Description: PromptUsageDescription,
+	}, s.handlePromptUsage)
+}
+
+// GetTools returns tools for static inspection or dump.
+func GetTools(enableArtifacts bool, bundledDeps []string) []*mcp.Tool {
+	ws := New("", enableArtifacts, "", bundledDeps)
+	return ws.GetTools()
 }

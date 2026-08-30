@@ -34,6 +34,10 @@ if [ -z "$ENDPOINT_URL" ]; then
     exit 1
 fi
 
+if [[ "$ENDPOINT_URL" != http* ]]; then
+    ENDPOINT_URL="${URL}${ENDPOINT_URL}"
+fi
+
 echo "🔑 Initializing..."
 curl -s -X POST "$ENDPOINT_URL" -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}' > /dev/null
