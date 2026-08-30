@@ -27,6 +27,39 @@ Füge das deinem System-Prompt hinzu:
 
 ---
 
+## 💡 Typische Praxisbeispiele: Wo LLMs versagen & Code glänzt
+
+### ⏱️ Beispiel 1: Datums- & Zeitberechnungen (Schaltjahre & Epochen)
+* **Die Frage:** *„Wie viele Minuten sind seit dem 01.01.1970 00:00 UTC bis heute vergangen?“*
+* **Problem beim LLM:** Das Sprachmodell versucht Tage mit 365,25 Tagen abzuschätzen, stolpert über Schaltjahre oder verliert sich in Rechenungenauigkeiten.
+* **Lösung mit `execute_script`:**
+  ```typescript
+  const start = new Date("1970-01-01T00:00:00Z").getTime();
+  const now = Date.now();
+  const minutes = Math.floor((now - start) / 60000);
+  console.log(`${minutes.toLocaleString("de-DE")} Minuten vergangen`);
+  ```
+  *(Exakt auf die Millisekunde, 100% deterministisch in 2ms).*
+
+### 📈 Beispiel 2: Statistische Analysen & Sensordaten
+* **Die Frage:** *„Hier sind 5 Messwerte [21.4, 22.8, 21.9, 23.5, 22.1]. Berechne Mittelwert und Standardabweichung.“*
+* **Problem beim LLM:** LLMs neigen bei Quadratwurzeln ($\sqrt{\dots}$) und Quadratsummen zu Rundungsfehlern und Halluzinationen.
+* **Lösung mit `execute_script`:**
+  ```typescript
+  const data = [21.4, 22.8, 21.9, 23.5, 22.1];
+  const n = data.length;
+  const avg = data.reduce((a, b) => a + b, 0) / n;
+  const variance = data.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / (n - 1);
+  const stdDev = Math.sqrt(variance);
+
+  console.log(JSON.stringify({
+    mittelwert: Number(avg.toFixed(2)),
+    standardabweichung: Number(stdDev.toFixed(4))
+  }, null, 2));
+  ```
+
+---
+
 ## Wie es funktioniert
 
 ![Wie wollmilchsau funktioniert](docs/how_it_works.png)

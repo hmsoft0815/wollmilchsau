@@ -27,6 +27,39 @@ Add this to your system prompt:
 
 ---
 
+## 💡 Real-World Examples: Where LLMs Fail & Code Shines
+
+### ⏱️ Example 1: Date & Time Arithmetic (Leap Years & Epochs)
+* **The Question:** *"How many minutes have passed since 1970-01-01 00:00 UTC until now?"*
+* **LLM without sandbox:** Approximates days with 365.25, gets confused by leap years, and generates hallucinations or conflicting estimates across steps.
+* **With `execute_script`:**
+  ```typescript
+  const start = new Date("1970-01-01T00:00:00Z").getTime();
+  const now = Date.now();
+  const minutes = Math.floor((now - start) / 60000);
+  console.log(`${minutes.toLocaleString("en-US")} minutes passed`);
+  ```
+  *(Millisecond-exact, 100% deterministic in 2ms).*
+
+### 📈 Example 2: Statistical Metrics & Sensor Data
+* **The Question:** *"Here are 5 sensor readings [21.4, 22.8, 21.9, 23.5, 22.1]. Compute the mean and sample standard deviation."*
+* **LLM without sandbox:** Struggles with square roots ($\sqrt{\dots}$) and variance sums, leading to subtle rounding and reasoning errors.
+* **With `execute_script`:**
+  ```typescript
+  const data = [21.4, 22.8, 21.9, 23.5, 22.1];
+  const n = data.length;
+  const avg = data.reduce((a, b) => a + b, 0) / n;
+  const variance = data.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / (n - 1);
+  const stdDev = Math.sqrt(variance);
+
+  console.log(JSON.stringify({
+    mean: Number(avg.toFixed(2)),
+    stdDev: Number(stdDev.toFixed(4))
+  }, null, 2));
+  ```
+
+---
+
 ## How It Works
 
 ![How wollmilchsau works](docs/how_it_works.png)

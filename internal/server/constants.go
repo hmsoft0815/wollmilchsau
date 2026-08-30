@@ -76,7 +76,8 @@ const (
 		"- check_syntax: For pure syntax validation without execution.\n" +
 		"- list_js_packages: Lists bundled JS packages (crypto-js, lodash(+@types/lodash), mathjs, zod) available for require/import in scripts and multi-file projects.\n" +
 		"\n\nWhen to use wollmilchsau:\n" +
-		"- Mathematical Complexity: For any calculation beyond basic arithmetic or involving many steps.\n" +
+		"- Mathematical & Statistical Complexity: For any calculation beyond basic arithmetic, standard deviation, mean/median, MKT, or multi-step formulas.\n" +
+		"- Time & Date Math: For leap-year sensitive calculations, epoch minute/second intervals, and date diffs.\n" +
 		"- Algorithm Verification: To verify logic, sorting, searching, or any procedural task.\n" +
 		"- Data Transformation: To parse, clean, or format structured data (JSON, CSV, etc.).\n" +
 		"- Code Validation: To check if a piece of logic actually works as intended.\n" +
