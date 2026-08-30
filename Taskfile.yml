@@ -57,6 +57,7 @@ tasks:
       - go test ./...
       - task: test-mcp
       - task: test-mcp-extended
+      - task: test-mcp-bundled
 
   test-mcp:
     desc: Run basic interaction tests using mcp-tester
@@ -76,6 +77,17 @@ tasks:
       MCP_TESTER: mcp-tester
     cmds:
       - "{{.MCP_TESTER}} test --command {{.BINARY}} --script tests/extended.mcp"
+    preconditions:
+      - sh: command -v {{.MCP_TESTER}}
+        msg: "mcp-tester not found."
+
+  test-mcp-bundled:
+    desc: Run bundled packages interaction tests using mcp-tester
+    deps: [build]
+    vars:
+      MCP_TESTER: mcp-tester
+    cmds:
+      - "{{.MCP_TESTER}} test --command {{.BINARY}} --script tests/bundled_packages.mcp"
     preconditions:
       - sh: command -v {{.MCP_TESTER}}
         msg: "mcp-tester not found."

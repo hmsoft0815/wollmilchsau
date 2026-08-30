@@ -22,14 +22,14 @@ func TestArtifactIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
 	}
-	defer cli.Close()
+	defer func() { _ = cli.Close() }()
 
 	iso := v8.NewIsolate()
 	defer iso.Dispose()
 	v8ctx := v8.NewContext(iso)
 	defer v8ctx.Close()
 
-	if err := InjectArtifactServiceWithClient(iso, v8ctx, cli); err != nil {
+	if err = InjectArtifactServiceWithClient(iso, v8ctx, cli); err != nil {
 		t.Fatalf("Failed to inject artifact service: %v", err)
 	}
 
@@ -42,9 +42,9 @@ func TestArtifactIntegration(t *testing.T) {
 
 		// 1. Write via JS
 		jsWrite := `JSON.stringify(artifact.write("` + filename + `", "` + content + `", "text/plain"))`
-		val, err := v8ctx.RunScript(jsWrite, "test_write.js")
-		if err != nil {
-			t.Fatalf("JS Write failed: %v", err)
+		val, runErr := v8ctx.RunScript(jsWrite, "test_write.js")
+		if runErr != nil {
+			t.Fatalf("JS Write failed: %v", runErr)
 		}
 		t.Logf("JS Write result: %s", val.String())
 
@@ -52,8 +52,8 @@ func TestArtifactIntegration(t *testing.T) {
 		var writeRes struct {
 			ID string `json:"id"`
 		}
-		if err := wrapResultToStruct(v8ctx, val, &writeRes); err != nil {
-			t.Fatalf("Failed to parse write result: %v", err)
+		if wrapErr := wrapResultToStruct(v8ctx, val, &writeRes); wrapErr != nil {
+			t.Fatalf("Failed to parse write result: %v", wrapErr)
 		}
 
 		if writeRes.ID == "" {
@@ -61,9 +61,9 @@ func TestArtifactIntegration(t *testing.T) {
 		}
 
 		// 2. Read via Go Client to verify
-		readRes, err := cli.Read(ctx, writeRes.ID)
-		if err != nil {
-			t.Fatalf("Go Read failed: %v", err)
+		readRes, readErr := cli.Read(ctx, writeRes.ID)
+		if readErr != nil {
+			t.Fatalf("Go Read failed: %v", readErr)
 		}
 
 		if string(readRes.Content) != content {
@@ -71,9 +71,8 @@ func TestArtifactIntegration(t *testing.T) {
 		}
 
 		// 3. Delete
-		_, err = cli.Delete(ctx, writeRes.ID)
-		if err != nil {
-			t.Errorf("Cleanup failed: %v", err)
+		if _, delErr := cli.Delete(ctx, writeRes.ID); delErr != nil {
+			t.Errorf("Cleanup failed: %v", delErr)
 		}
 	})
 
@@ -87,17 +86,17 @@ func TestArtifactIntegration(t *testing.T) {
 
 		// 1. Write via JS with UserID (6th argument)
 		jsWrite := `JSON.stringify(artifact.write("` + filename + `", "` + content + `", "text/plain", 1, "test desc", "` + userID + `"))`
-		val, err := v8ctx.RunScript(jsWrite, "test_user_write.js")
-		if err != nil {
-			t.Fatalf("JS Write failed: %v", err)
+		val, runErr := v8ctx.RunScript(jsWrite, "test_user_write.js")
+		if runErr != nil {
+			t.Fatalf("JS Write failed: %v", runErr)
 		}
 
 		var writeRes struct {
 			ID    string `json:"id"`
 			Error string `json:"error"`
 		}
-		if err := wrapResultToStruct(v8ctx, val, &writeRes); err != nil {
-			t.Fatalf("Failed to parse write result: %v", err)
+		if wrapErr := wrapResultToStruct(v8ctx, val, &writeRes); wrapErr != nil {
+			t.Fatalf("Failed to parse write result: %v", wrapErr)
 		}
 
 		if writeRes.Error != "" {
@@ -106,9 +105,9 @@ func TestArtifactIntegration(t *testing.T) {
 
 		// 2. Read via JS with UserID (2nd argument)
 		jsRead := `JSON.stringify(artifact.read("` + writeRes.ID + `", "` + userID + `"))`
-		readVal, err := v8ctx.RunScript(jsRead, "test_user_read.js")
-		if err != nil {
-			t.Fatalf("JS Read failed: %v", err)
+		readVal, readRunErr := v8ctx.RunScript(jsRead, "test_user_read.js")
+		if readRunErr != nil {
+			t.Fatalf("JS Read failed: %v", readRunErr)
 		}
 
 		var readRes struct {
@@ -117,8 +116,8 @@ func TestArtifactIntegration(t *testing.T) {
 		}
 		// Note: content comes as base64 in JSON result if using our wrapResult (which uses json.Marshal on pb.ReadResponse)
 		// Actually pb.ReadResponse.Content is []byte, which Marshals to base64.
-		if err := wrapResultToStruct(v8ctx, readVal, &readRes); err != nil {
-			t.Fatalf("Failed to parse read result: %v", err)
+		if wrapErr := wrapResultToStruct(v8ctx, readVal, &readRes); wrapErr != nil {
+			t.Fatalf("Failed to parse read result: %v", wrapErr)
 		}
 
 		if readRes.Error != "" {

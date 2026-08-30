@@ -1,0 +1,38 @@
+// Wollmilchsau Bundled Packages Integration Test
+
+// 1. Test list_js_packages tool
+call_tool list_js_packages
+assert_contains "crypto-js"
+assert_contains "lodash"
+assert_contains "zod"
+assert_contains "mathjs"
+assert_contains "@types/lodash"
+
+// 2. Test lodash in execute_script
+call_tool execute_script "const _ = require('lodash'); console.log(_.join(['npm', 'packages', 'work'], '-'))"
+assert_contains "Execution finished successfully"
+assert_contains "npm-packages-work"
+
+// 3. Test zod in execute_script
+call_tool execute_script "const { z } = require('zod'); const schema = z.string(); console.log('ZOD_VALID=' + schema.safeParse('hello').success)"
+assert_contains "Execution finished successfully"
+assert_contains "ZOD_VALID=true"
+
+// 4. Test crypto-js in execute_script
+call_tool execute_script "const CryptoJS = require('crypto-js'); console.log('MD5=' + CryptoJS.MD5('wollmilchsau').toString())"
+assert_contains "Execution finished successfully"
+assert_contains "MD5="
+
+// 5. Test mathjs in execute_script
+call_tool execute_script "const math = require('mathjs'); console.log('MATH=' + math.evaluate('sqrt(16) * 5'))"
+assert_contains "Execution finished successfully"
+assert_contains "MATH=20"
+
+// 6. Test TypeScript import with lodash in execute_project
+call_tool execute_project "main.ts" <<EOF
+[
+  {"name":"main.ts", "content":"import _ from 'lodash'; console.log('CHUNKS=' + _.chunk([1, 2, 3, 4], 2).length);"}
+]
+EOF
+assert_contains "Execution finished successfully"
+assert_contains "CHUNKS=2"

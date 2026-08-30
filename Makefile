@@ -76,6 +76,7 @@ test-mcp: build ## Run automated MCP script tests via mcp-tester
 	@echo "🧪 Running MCP Integration Tests..."
 	mcp-tester test --script tests/basic.mcp -c "$(shell pwd)/build/$(BINARY)"
 	mcp-tester test --script tests/extended.mcp -c "$(shell pwd)/build/$(BINARY)"
+	mcp-tester test --script tests/bundled_packages.mcp -c "$(shell pwd)/build/$(BINARY)"
 
 inspect: build ## Run mcp-tester quality inspection
 	@if ! command -v mcp-tester >/dev/null 2>&1; then \

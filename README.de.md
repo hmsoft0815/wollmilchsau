@@ -37,16 +37,16 @@ Füge das deinem System-Prompt hinzu:
 
 ## Features
 
-|| Feature | Beschreibung ||
+| Feature | Beschreibung |
 |---|---|
-|| 🔐 **Sandboxed V8** | Kein Netzwerk, kein Dateisystem, keine Node.js APIs |
-|| ⚡ **In-Process esbuild** | TypeScript-Bundling in Mikrosekunden, kein Subprocess |
-|| 🗺️ **Source Maps** | Fehler zeigen auf die exakte TypeScript-Zeile |
-|| 🖼️ **Tool-Icons** | Visuelle Darstellung in MCP-kompatiblen Clients |
-|| 📦 **Artefakt-Integration** | Automatisierte Speicherung großer Ausgaben via `openArtifact()` |
-|| 📊 **Strukturierte Ausgabe** | JSON-Schema basierte Ergebnisse für zuverlässiges Tool-Parsing |
-|| 🗂️ **ZIP Request Logging** | Vollständiger Audit-Trail jeder LLM-Codeausführung |
-|| 🔌 **stdio + SSE** | Lokal (Claude Desktop) und remote nutzbar |
+| 🔐 **Sandboxed V8** | Kein Netzwerk, kein Dateisystem, keine Node.js APIs |
+| ⚡ **In-Process esbuild** | TypeScript-Bundling in Mikrosekunden, kein Subprocess |
+| 🗺️ **Source Maps** | Fehler zeigen auf die exakte TypeScript-Zeile |
+| 🖼️ **Tool-Icons** | Visuelle Darstellung in MCP-kompatiblen Clients |
+| 📦 **Artefakt-Integration** | Automatisierte Speicherung großer Ausgaben via `openArtifact()` |
+| 📊 **Strukturierte Ausgabe** | JSON-Schema basierte Ergebnisse für zuverlässiges Tool-Parsing |
+| 🗂️ **ZIP Request Logging** | Vollständiger Audit-Trail jeder LLM-Codeausführung |
+| 🔌 **stdio + SSE** | Lokal (Claude Desktop) und remote nutzbar |
 
 ---
 
@@ -104,15 +104,15 @@ docker run -p 8000:8000 wollmilchsau
 
 #### Kommandozeilen-Flags
 
-|| Flag | Beschreibung ||
+| Flag | Beschreibung |
 |---|---|
-|| `-addr` | Listen-Adresse für SSE (z.B. `:8080`). Falls leer, wird stdio verwendet. |
-|| `-log-dir` | Verzeichnis zur Speicherung vollständiger Request/Response ZIP-Archive (optional). |
-|| `-enable-artifacts` | **Erforderlich**, um die Artefakt-Integration zu aktivieren (`artifact` Objekt, `wollmilchsau.openArtifact` und das `execute_artifact` Tool). |
-|| `-artifact-addr` | gRPC-Adresse des `mlcartifact` Servers (z.B. `localhost:50051`). Optional, nutzt Standardwerte falls leer. |
-|| `-dump` | Gibt das MCP Tool-Schema auf stdout aus und beendet das Programm. |
-|| `-bundled-js-deps` | Komma-getrennte npm-Pakete für die Sandbox (z.B. `crypto-js,lodash,mathjs,zod`). Default: alle Standardpakete. **Installation nur beim Serverstart — keine runtime-Installation möglich (Sandboxing).** |
-|| `-version` | Zeigt Versionsinformationen an und beendet das Programm. |
+| `-addr` | Listen-Adresse für SSE (z.B. `:8080`). Falls leer, wird stdio verwendet. |
+| `-log-dir` | Verzeichnis zur Speicherung vollständiger Request/Response ZIP-Archive (optional). |
+| `-enable-artifacts` | **Erforderlich**, um die Artefakt-Integration zu aktivieren (`artifact` Objekt, `wollmilchsau.openArtifact` und das `execute_artifact` Tool). |
+| `-artifact-addr` | gRPC-Adresse des `mlcartifact` Servers (z.B. `localhost:50051`). Optional, nutzt Standardwerte falls leer. |
+| `-dump` | Gibt das MCP Tool-Schema auf stdout aus und beendet das Programm. |
+| `-bundled-js-deps` | Komma-getrennte npm-Pakete für die Sandbox (z.B. `crypto-js,lodash,mathjs,zod`). Default: alle Standardpakete. **Installation nur beim Serverstart — keine runtime-Installation möglich (Sandboxing).** |
+| `-version` | Zeigt Versionsinformationen an und beendet das Programm. |
 
 ---
 
@@ -128,6 +128,7 @@ wollmilchsau kann Node.js-Pakete in die V8-Sandbox injizieren, damit LLM-Agenten
 | `lodash` | Utilities für Arrays, Numbers, Objects, Strings |
 | `@types/lodash` | TypeScript Type Definitions für lodash |
 | `mathjs` | Mathematics engine mit Matrices, Fractions, Units, Expressions |
+| `zod` | TypeScript-first Schema-Validierung mit Type Inference |
 
 ### Eigene Pakete hinzufügen
 
@@ -225,12 +226,12 @@ Bei Verwendung von `openArtifact()` fügt **wollmilchsau** automatisch einen MCP
 
 ## Stack
 
-|| Komponente | Library | Zweck ||
+| Komponente | Library | Zweck |
 |---|---|---|
-|| MCP-Protokoll | `mark3labs/mcp-go` | JSON-RPC 2.0 |
-|| TS-Bundling | `evanw/esbuild` | Schnelle In-Process-Transpilierung |
-|| JS-Ausführung | `rogchap/v8go` | CGo-Bindings zu V8 |
-|| Source Maps | Custom | VLQ-Dekodierung & Positionsauflösung |
+| MCP-Protokoll | `mark3labs/mcp-go` | JSON-RPC 2.0 |
+| TS-Bundling | `evanw/esbuild` | Schnelle In-Process-Transpilierung |
+| JS-Ausführung | `rogchap/v8go` | CGo-Bindings zu V8 |
+| Source Maps | Custom | VLQ-Dekodierung & Positionsauflösung |
 
 ---
 

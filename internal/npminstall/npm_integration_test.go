@@ -14,7 +14,7 @@ func TestInstallAndVirtualFiles(t *testing.T) {
 	dir := t.TempDir()
 
 	// Create minimal package.json.
-		if err := os.WriteFile(filepath.Join(dir, "package.json"), []byte("{}"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "package.json"), []byte("{}"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 

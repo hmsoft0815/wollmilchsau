@@ -16,7 +16,7 @@ type Package struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	Type    string `json:"type,omitempty"` // "module" for ESM, empty for CJS
-	Main    string `json:"main,omitempty"`   // entry point relative to package dir
+	Main    string `json:"main,omitempty"` // entry point relative to package dir
 }
 
 // PackagesFromDir reads all installed npm packages from a node_modules directory.
@@ -34,30 +34,57 @@ func PackagesFromDir(baseDir string) ([]Package, error) {
 		}
 
 		name := entry.Name()
+		if strings.HasPrefix(name, "@") {
+			subEntries, err := os.ReadDir(filepath.Join(nodeModules, name))
+			if err != nil {
+				continue
+			}
+			for _, subEntry := range subEntries {
+				if !subEntry.IsDir() || strings.HasPrefix(subEntry.Name(), ".") {
+					continue
+				}
+				subPkgPath := filepath.Join(nodeModules, name, subEntry.Name())
+				if pkg, ok := readPackageJSON(subPkgPath, name+"/"+subEntry.Name()); ok {
+					pkgs = append(pkgs, pkg)
+				}
+			}
+			continue
+		}
+
 		pkgPath := filepath.Join(nodeModules, name)
-
-		pkgJSON, err := os.ReadFile(filepath.Join(pkgPath, "package.json"))
-		if err != nil {
-			continue // skip packages without package.json
+		if pkg, ok := readPackageJSON(pkgPath, name); ok {
+			pkgs = append(pkgs, pkg)
 		}
-
-		var meta struct {
-			Name    string `json:"name"`
-			Version string `json:"version"`
-			Main    string `json:"main"`
-			Type    string `json:"type"`
-		}
-		if err := json.Unmarshal(pkgJSON, &meta); err != nil {
-			continue // skip invalid packages
-		}
-
-		pkgs = append(pkgs, Package{
-			Name:    meta.Name,
-			Version: meta.Version,
-			Main:    meta.Main,
-			Type:    meta.Type,
-		})
 	}
 
 	return pkgs, nil
+}
+
+func readPackageJSON(pkgPath, defaultName string) (Package, bool) {
+	pkgJSON, err := os.ReadFile(filepath.Join(pkgPath, "package.json"))
+	if err != nil {
+		return Package{}, false
+	}
+
+	var meta struct {
+		Name    string `json:"name"`
+		Version string `json:"version"`
+		Main    string `json:"main"`
+		Type    string `json:"type"`
+	}
+	if err := json.Unmarshal(pkgJSON, &meta); err != nil {
+		return Package{}, false
+	}
+
+	name := meta.Name
+	if name == "" {
+		name = defaultName
+	}
+
+	return Package{
+		Name:    name,
+		Version: meta.Version,
+		Main:    meta.Main,
+		Type:    meta.Type,
+	}, true
 }

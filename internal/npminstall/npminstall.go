@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/hmsoft0815/wollmilchsau/bundle"
@@ -42,6 +43,7 @@ type Manager struct {
 	mu   sync.Mutex
 	dir  string // shared temp dir where all bundled packages live
 	pkgs []bundle.Package
+	vfs  []parser.VirtualFile // cached virtual files
 }
 
 // NewManager creates a manager for the given temp directory containing
@@ -94,23 +96,40 @@ func (m *Manager) Install(packages []string) error {
 		return fmt.Errorf("npm install: %w\n%s", err, truncate(out, 512))
 	}
 
-	// Read installed packages.
 	pkgs, err := bundle.PackagesFromDir(m.dir)
 	if err != nil {
 		return fmt.Errorf("read packages: %w", err)
 	}
 	m.pkgs = pkgs
+	m.vfs = nil // invalidate cache
+	return nil
+}
 
+// Reload refreshes the list of packages from the manager's node_modules directory.
+func (m *Manager) Reload() error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	pkgs, err := bundle.PackagesFromDir(m.dir)
+	if err != nil {
+		return fmt.Errorf("read packages: %w", err)
+	}
+	m.pkgs = pkgs
+	m.vfs = nil // invalidate cache
 	return nil
 }
 
 // Packages returns the list of bundled packages with metadata.
 func (m *Manager) Packages() []bundle.Package {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	return m.pkgs
 }
 
 // PackageSpecs returns package names+versions as "pkg@ver" specs.
 func (m *Manager) PackageSpecs() []string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	specs := make([]string, 0, len(m.pkgs))
 	for _, p := range m.pkgs {
 		if p.Version != "" {
@@ -124,6 +143,8 @@ func (m *Manager) PackageSpecs() []string {
 
 // PackageInfos returns a list of package info objects for the list_js_packages tool.
 func (m *Manager) PackageInfos() []map[string]any {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	infos := make([]map[string]any, 0, len(m.pkgs))
 	for _, p := range m.pkgs {
 		info := map[string]any{
@@ -148,22 +169,39 @@ func (m *Manager) NodeModulesPath() string {
 // ToVirtualFiles walks the manager's node_modules and returns VirtualFile
 // entries keyed by "node_modules/<scope>/..." or "node_modules/<pkg>/...".
 func (m *Manager) ToVirtualFiles() ([]parser.VirtualFile, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.vfs != nil {
+		return m.vfs, nil
+	}
+
 	nodeModules := m.NodeModulesPath()
 	var vfs []parser.VirtualFile
 
-	err := fs.WalkDir(os.DirFS(nodeModules), ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
+	err := filepath.WalkDir(nodeModules, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
 			return err
 		}
+		if d.IsDir() {
+			if strings.HasPrefix(d.Name(), ".") && path != nodeModules {
+				return filepath.SkipDir
+			}
+			return nil
+		}
 
-		fullPath := filepath.Join(nodeModules, path)
-		data, readErr := os.ReadFile(fullPath)
+		rel, relErr := filepath.Rel(m.dir, path)
+		if relErr != nil {
+			return nil
+		}
+
+		data, readErr := os.ReadFile(path)
 		if readErr != nil {
 			return nil // skip unreadable files
 		}
 
 		vfs = append(vfs, parser.VirtualFile{
-			Name:    filepath.ToSlash(filepath.Join("node_modules", path)),
+			Name:    filepath.ToSlash(rel),
 			Content: string(data),
 		})
 		return nil
@@ -172,6 +210,7 @@ func (m *Manager) ToVirtualFiles() ([]parser.VirtualFile, error) {
 		return nil, fmt.Errorf("walk node_modules: %w", err)
 	}
 
+	m.vfs = vfs
 	return vfs, nil
 }
 

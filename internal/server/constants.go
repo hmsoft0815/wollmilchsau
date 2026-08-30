@@ -3,7 +3,7 @@ package server
 
 const (
 	ServerName    = "wollmilchsau"
-	ServerVersion = "2.3.0"
+	ServerVersion = "2.4.0"
 	ServerTitle   = "Wollmilchsau – TypeScript Execution Engine"
 
 	// mimeTypeSVG is the shared MIME type constant for inline SVG icons.
@@ -46,7 +46,7 @@ const (
 		"Use this tool when you only need to validate the syntax of the code without running it."
 
 	ToolListJSPackages = "list_js_packages"
-	listJSPKGDesc = "Lists all bundled JavaScript/Node.js packages available for import in execute_project scripts. " +
+	listJSPKGDesc      = "Lists all bundled JavaScript/Node.js packages available for import in execute_project scripts. " +
 		"Returns package names, versions, and descriptions so agents know which modules they can require() or ES-import."
 
 	ParamCode = "code"

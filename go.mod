@@ -3,7 +3,6 @@ module github.com/hmsoft0815/wollmilchsau
 go 1.24.2
 
 require (
-	connectrpc.com/connect v1.19.1
 	github.com/evanw/esbuild v0.24.2
 	github.com/google/uuid v1.6.0
 	github.com/hmsoft0815/mlcartifact v0.4.0
@@ -12,6 +11,7 @@ require (
 )
 
 require (
+	connectrpc.com/connect v1.19.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect
