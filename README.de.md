@@ -19,6 +19,18 @@ LLMs verbringen oft Dutzende vonTokens — und wertvolle Reasoning-Zeit — dami
 
 **wollmilchsau** gibt deinem KI-Agenten eine JavaScript/TypeScript-Sandbox. Anstatt sich durch eine endlose Chain-of-Thought zu quälen, schreibt der Agent ein kleines Programm, führt es aus und erhält ein präzises Ergebnis.
 
+---
+
+## 🎯 Warum wollmilchsau? (Die 4 Kernvorteile)
+
+| Vorteil | Ohne wollmilchsau (Reines LLM-Reasoning) | Mit wollmilchsau (V8 Sandbox) |
+|---|---|---|
+| ⚡ **Geschwindigkeit** | 10–45 Sekunden langsame Token-Generierung | **1–5 Millisekunden** native V8-Ausführung |
+| 💰 **Kosten & Tokens** | Tausende teure Reasoning-Tokens verbraucht | **Nahezu 0 Tokens** für die Berechnung |
+| 🎯 **Determinismus** | Probabilistisches Raten von Zahlen & Strings | **100% mathematisch exakt & reproduzierbar** |
+| 🔄 **Selbstkorrektur** | LLM übersieht eigene Denk- & Logikfehler | V8 Stack-Trace + Source Maps → **Agent korrigiert sich selbst** |
+| 🛡️ **Sicherheit** | Lokale Bash/Python-Skripte gefährden das Host-System | **Vollständig isoliert** (Kein Dateisystem, kein Netzwerk) |
+
 ### So gibst du deinem LLM die richtige Anweisung
 
 Füge das deinem System-Prompt hinzu:

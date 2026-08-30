@@ -19,6 +19,18 @@ LLMs often spend dozens of tokens — and precious reasoning time — working th
 
 **wollmilchsau** gives your AI agent a JavaScript/TypeScript execution sandbox. Instead of looping through a long chain-of-thought, the agent can write a small program, run it, and get a precise result.
 
+---
+
+## 🎯 Why wollmilchsau? (Core Advantages)
+
+| Advantage | Without wollmilchsau (Pure LLM Reasoning) | With wollmilchsau (V8 Sandbox) |
+|---|---|---|
+| ⚡ **Speed & Latency** | 10–45 seconds of slow token streaming | **1–5 milliseconds** native V8 execution |
+| 💰 **Cost & Token Savings** | Thousands of costly reasoning tokens consumed | **Near zero tokens** spent on computation |
+| 🎯 **100% Determinism** | Probabilistic guessing of numbers & strings | **100% mathematically exact & reproducible** |
+| 🔄 **Self-Correction** | LLM misses subtle reasoning & calculation bugs | V8 stack traces + source maps → **Agent self-corrects** |
+| 🛡️ **Host Security** | Local bash/Python tools can harm host systems | **Fully isolated** (No filesystem, no network) |
+
 ### How to tell your LLM to use it
 
 Add this to your system prompt:
