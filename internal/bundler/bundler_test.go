@@ -102,3 +102,57 @@ func TestBundle_SourceMap(t *testing.T) {
 		t.Error("could not resolve any position back to 'main.ts' in bundled JS")
 	}
 }
+
+func TestBundle_SyntaxError(t *testing.T) {
+	plan := &parser.ExecutionPlan{
+		Files: []parser.VirtualFile{
+			{
+				Name:    "broken.ts",
+				Content: "const x = ; // syntax error",
+			},
+		},
+		EntryPoint: "broken.ts",
+	}
+
+	_, err := Bundle(plan)
+	if err == nil {
+		t.Fatal("expected syntax error from bundler")
+	}
+
+	bundleErr, ok := err.(*BundleError)
+	if !ok {
+		t.Fatalf("expected *BundleError, got %T: %v", err, err)
+	}
+
+	if len(bundleErr.Messages) == 0 {
+		t.Fatal("expected diagnostic messages in BundleError")
+	}
+	if !strings.Contains(bundleErr.Error(), "Unexpected") {
+		t.Errorf("unexpected error message: %s", bundleErr.Error())
+	}
+}
+
+func TestBundle_MultiFile(t *testing.T) {
+	plan := &parser.ExecutionPlan{
+		Files: []parser.VirtualFile{
+			{
+				Name:    "main.ts",
+				Content: `import { answer } from "./helper"; console.log(answer);`,
+			},
+			{
+				Name:    "helper.ts",
+				Content: `export const answer: number = 42;`,
+			},
+		},
+		EntryPoint: "main.ts",
+	}
+
+	result, err := Bundle(plan)
+	if err != nil {
+		t.Fatalf("bundle failed: %v", err)
+	}
+
+	if !strings.Contains(result.JS, "42") {
+		t.Errorf("expected bundled JS to contain helper constant, got: %s", result.JS)
+	}
+}
