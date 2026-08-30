@@ -1,10 +1,19 @@
 // Copyright (c) 2026 Michael Lechner. All rights reserved.
 package server
 
+// ServerVersion is stamped from the VERSION file at build time via
+// `-ldflags -X`. It is a var, not a const, because a const cannot be stamped —
+// and it reads "dev" rather than the real number on purpose: with the true
+// version written here, an unstamped build reports it anyway and a broken
+// stamp stays invisible forever.
+//
+// It reaches clients as the MCP server's declared version (server.go), so a
+// stale number misinforms every one of them.
+var ServerVersion = "dev"
+
 const (
-	ServerName    = "wollmilchsau"
-	ServerVersion = "2.4.0"
-	ServerTitle   = "Wollmilchsau – TypeScript Execution Engine"
+	ServerName  = "wollmilchsau"
+	ServerTitle = "Wollmilchsau – TypeScript Execution Engine"
 
 	// mimeTypeSVG is the shared MIME type constant for inline SVG icons.
 	mimeTypeSVG = "image/svg+xml"
