@@ -1,5 +1,8 @@
 # wollmilchsau — Lass das LLM rechnen statt denken.
 
+> **[mlcgo.eu](https://mlcgo.eu)** — Werkzeuge, Bibliotheken und Handbücher · [Produktseite](https://mlcgo.eu/products/wollmilchsau/)
+
+
 > **Der kluge Ansatz:** Wenn ein Problem mit einem kleinen Programm lösbar ist — lass das LLM keinen langen Denkprozess durchlaufen. Gib ihm eine Sandbox, lass es eine TypeScript-Lösung schreiben und erhalte in Millisekunden ein deterministisches Ergebnis.
 
 Copyright (c) 2026 Michael Lechner. Lizenziert unter der MIT-Lizenz.

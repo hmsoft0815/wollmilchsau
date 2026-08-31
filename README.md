@@ -1,5 +1,8 @@
 # wollmilchsau — Stop Making the LLM Think. Let It Write Code.
 
+> **[mlcgo.eu](https://mlcgo.eu)** — tools, libraries and manuals · [Product page](https://mlcgo.eu/products/wollmilchsau/)
+
+
 > **The smarter approach:** When a problem can be solved with a small program, don't make the LLM reason through it step by step. Give it a sandbox, let it write a TypeScript solution, and get a deterministic result in milliseconds.
 
 Copyright (c) 2026 Michael Lechner. Licensed under the MIT License.
