@@ -321,3 +321,11 @@ I kindly ask that this software **not** be used for:
 Additionally, I explicitly request that **Isensix, Inc.** and its acquirer **Dwyer-Omega** do not use this software.
 
 *This is an ethical appeal, not a legal modification of the MIT License.*
+
+---
+
+## Reference
+
+The **[MCP Handbook](https://mlcgo.eu/books/mcp-handbuch/)** explains the Model Context Protocol from the ground
+up — tools, resources, prompts, transports, security and the artifact pattern.
+Available in English and German.

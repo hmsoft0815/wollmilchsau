@@ -309,3 +309,11 @@ Bei Verwendung von `openArtifact()` fügt **wollmilchsau** automatisch einen MCP
 ## 📜 Lizenz & Ethische Nutzung
 
 Lizenziert unter der **MIT-Lizenz**.
+
+---
+
+## Referenz
+
+Das **[MCP-Handbuch](https://mlcgo.eu/books/mcp-handbuch/)** erklärt das Model Context Protocol von Grund auf —
+Tools, Resources, Prompts, Transporte, Sicherheit und das Artifact-Pattern.
+Auf Deutsch und Englisch.
