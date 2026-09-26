@@ -320,3 +320,8 @@ Lizenziert unter der **MIT-Lizenz**.
 Das **[MCP-Handbuch](https://mlcgo.eu/books/mcp-handbuch/)** erklärt das Model Context Protocol von Grund auf —
 Tools, Resources, Prompts, Transporte, Sicherheit und das Artifact-Pattern.
 Auf Deutsch und Englisch.
+
+<!-- mlcai-private -->
+## Projektdokumentation (`.mlcai/`)
+
+`.mlcai/` ist ein **privates Git-Submodul**: interne Planung, Backlog und Arbeitsnotizen, gepflegt mit dem MLC Doc Hub. Es ist nicht öffentlich zugänglich — **ohne** `--recurse-submodules` klonen; für den Build wird es nicht gebraucht. Links nach `.mlcai/` funktionieren nur mit Zugriff (`git submodule update --init .mlcai`).

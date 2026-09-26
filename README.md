@@ -332,3 +332,8 @@ Additionally, I explicitly request that **Isensix, Inc.** and its acquirer **Dwy
 The **[MCP Handbook](https://mlcgo.eu/books/mcp-handbuch/)** explains the Model Context Protocol from the ground
 up — tools, resources, prompts, transports, security and the artifact pattern.
 Available in English and German.
+
+<!-- mlcai-private -->
+## Project documentation (`.mlcai/`)
+
+`.mlcai/` is a **private git submodule**: internal planning, backlog and work notes, maintained with the MLC Doc Hub. It is not publicly accessible — clone **without** `--recurse-submodules`; the build does not need it. Links into `.mlcai/` only work with access (`git submodule update --init .mlcai`).
