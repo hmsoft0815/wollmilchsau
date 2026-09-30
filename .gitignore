@@ -20,3 +20,6 @@ test_logs/
 # Task runner state
 .task/
 artifact_test_server.log
+
+# lokale MCP-Konfiguration (dochub-cli agent-rules)
+.mcp.json
